@@ -1,0 +1,58 @@
+/* Lesbares, responsives UI für die öffentliche GitHub-Pages-Version */
+:root{--bg:#080e18;--panel:#101b2b;--panel2:#172438;--line:#304059;--cyan:#49d7f0;--green:#67e0ba}
+body{background:radial-gradient(ellipse at 70% -180px,#15344a 0,transparent 52%),linear-gradient(#08121e,#080d16) fixed}
+.wrap{max-width:1320px;padding-top:38px}
+header{border-bottom:1px solid #2c3e54;padding-bottom:26px;margin-bottom:26px}
+.produktkennung{font-size:11px;font-weight:800;color:#74d0e5;letter-spacing:.19em;margin-bottom:12px}
+header h1{max-width:900px;font-size:clamp(30px,4.4vw,50px);letter-spacing:-.055em}
+header p{max-width:860px;line-height:1.65;font-size:15px}
+.navigation{display:flex;gap:20px;flex-wrap:wrap;margin-top:17px}
+a{color:#7de3f3;text-decoration-thickness:1px;text-underline-offset:3px}
+a:hover{color:#b4f4fa}
+.panel{box-shadow:0 9px 32px #0002;border-color:#293b53}
+.panel h2{letter-spacing:-.02em}
+.btn{transition:background-color .16s,border-color .16s,transform .12s}
+.btn:active{transform:translateY(1px)}
+.btn.primary{background:#078baa}
+.schnellstart{border:1px solid #355066;border-radius:10px;padding:14px;background:#0e1f2f;margin-top:18px}
+.schnellstart h3{margin:0 0 5px}
+.schnellstart p{margin:0 0 10px}
+.profil{font-size:12px;padding:8px 11px}
+.profil.ausgewaehlt{border-color:#49d7f0;background:#173c4d}
+.share{background:#0a5f73;border-color:#247f96}
+#shareStatus:empty{display:none}
+.metric.feature{background:linear-gradient(145deg,#14392e,#162838);border-color:#2e7967}
+.metric.feature .value{font-size:clamp(23px,2.8vw,31px)}
+.composition .ship{border-left:3px solid #40aeca}
+.tag{background:#142c3b}
+.erklaerung{margin-top:18px;padding:18px;background:#0d2330;border:1px solid #28586a;border-radius:10px}
+.erklaerung h2{margin-bottom:12px}
+.warum-inhalt{display:grid;grid-template-columns:repeat(auto-fit,minmax(195px,1fr));gap:13px}
+.begruendung{background:#142c3c;border:1px solid #2d4e60;border-radius:9px;padding:13px}
+.begruendung strong{display:block;color:#a6effa;margin-bottom:5px;font-size:13px}
+.begruendung p{margin:0;font-size:12px;color:#c6d7e4;line-height:1.6}
+.vergleichsbalken{width:100px;height:9px;border-radius:5px;background:#213245;overflow:hidden}
+.vergleichsbalken span{height:100%;display:block;background:linear-gradient(90deg,#0f90a8,#61dfba);border-radius:5px}
+#alternatives td:last-child,#alternatives th:last-child{text-align:left}
+#alternatives .em{background:#17352f}
+#totalModules{display:flex;gap:6px;flex-wrap:wrap}
+.total{border:1px solid #33485f}
+#calculate:disabled{opacity:.6;cursor:wait}
+#downloadPlan:disabled{opacity:.4;cursor:not-allowed}
+#status.error{background:#3f1722;padding:10px;border-radius:8px}
+[hidden]{display:none!important}
+@media(max-width:640px){
+ .wrap{padding:20px 12px 45px}
+ header h1{font-size:clamp(26px,7vw,36px);overflow-wrap:anywhere}
+ .navigation{gap:12px}
+ .panel{padding:16px}
+ .columns{display:block}
+ .stack{margin-bottom:16px}
+ .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .grid .field label{min-height:2.8em}
+ input[type=number],input[type=text],select{padding:9px 7px}
+ .metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .metrics .metric .label{font-size:11px}
+ .vergleichsbalken{width:65px}
+}
+@media(prefers-reduced-motion:reduce){.btn{transition:none}}
