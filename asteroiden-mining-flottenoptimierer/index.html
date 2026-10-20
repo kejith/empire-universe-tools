@@ -1,0 +1,487 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Asteroiden-Mining-Flottenoptimierer | Empire Universe Tools</title>
+  <meta name="description" content="Berechne deine optimale Empire Universe 4 Asteroiden-Mining-Flotte: Abbaustärke, Frachtraum, Flugzeiten und maximaler Ressourcenertrag pro Stunde. Kostenlos, auf Deutsch, ohne Login.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="de_DE">
+  <meta property="og:site_name" content="Empire Universe Tools">
+  <meta property="og:title" content="Asteroiden-Mining-Flottenoptimierer">
+  <meta property="og:description" content="Plane Fregatten, Mining-Laser, Frachtraum und Flugzyklen. Berechne den optimalen Ressourcen-Ertrag pro Stunde und teile deine Konfiguration.">
+  <meta property="og:url" content="https://kejith.github.io/empire-universe-tools/asteroiden-mining-flottenoptimierer/">
+  <meta name="twitter:card" content="summary">
+  <link rel="canonical" href="https://kejith.github.io/empire-universe-tools/asteroiden-mining-flottenoptimierer/">
+  <style>
+    :root{--bg:#0b101b;--panel:#141c2b;--panel2:#1b2637;--line:#2a394d;--text:#e5edf8;--muted:#9badc5;--cyan:#39d0ee;--green:#56ddb0;--danger:#ff8b95;--radius:14px}
+    *{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 10% 0%,#17283b 0%,var(--bg) 55%) fixed;color:var(--text);font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+    .wrap{max-width:1220px;margin:0 auto;padding:28px 22px 64px}header{margin-bottom:24px}h1{margin:0;font-size:clamp(25px,4vw,36px);line-height:1.15;letter-spacing:-.5px}h1 span{color:var(--cyan)}header p{margin:10px 0 0;color:var(--muted)}h2{font-size:18px;margin:0 0 16px}h3{font-size:15px;margin:0 0 12px}
+    .pill{font-size:11px;font-weight:750;letter-spacing:.06em;color:var(--cyan);background:#0c4050;border:1px solid #215b6b;padding:5px 9px;border-radius:99px;vertical-align:middle;margin-left:9px}
+    .columns{display:grid;grid-template-columns:minmax(330px,1fr) minmax(450px,1.23fr);gap:18px;align-items:start}.stack{display:grid;gap:18px}
+    .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:21px;box-shadow:0 8px 25px #0002;min-width:0}
+    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.field{display:grid;gap:5px;min-width:0}.field label{color:var(--muted);font-size:12px;font-weight:650}.field small{font-size:11px;color:var(--muted)}
+    input[type=number],input[type=text],select{width:100%;min-width:0;background:#0e1725;color:var(--text);border:1px solid #354760;border-radius:8px;padding:10px 11px;font:inherit;font-size:14px;outline:none}
+    input:focus,select:focus,button:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}input[type=checkbox],input[type=radio]{accent-color:#39d0ee}
+    input:disabled{opacity:.5}.radio-row{display:flex;flex-wrap:wrap;gap:15px;align-items:center;margin:2px 0 12px}.radio-row label{cursor:pointer;display:flex;gap:7px;align-items:center}
+    .actions{display:flex;gap:9px;flex-wrap:wrap}.btn{background:#26364b;color:var(--text);border:1px solid #41546b;border-radius:8px;padding:10px 15px;cursor:pointer;font:inherit;font-weight:650}.btn:hover{background:#324761}.primary{background:#0b849e;border-color:#1ca8c5;color:#fff}.primary:hover{background:#0c9ebb}.danger{color:var(--danger)}
+    .module-table,.summary-table{width:100%;border-collapse:collapse}.module-table th,.summary-table th{font-size:11px;color:var(--muted);text-align:left;font-weight:700;border-bottom:1px solid var(--line);padding:0 6px 10px}.module-table td,.summary-table td{padding:8px 5px;border-bottom:1px solid #263347;vertical-align:middle}.module-table td:first-child,.module-table th:first-child{padding-left:0}.module-table td:last-child{text-align:right}
+    .module-table input[type=number]{padding:8px 5px;width:100%;min-width:58px;font-size:12px}.module-table input[type=text]{padding:8px 6px;font-size:12px;min-width:104px}.module-table th:nth-child(1){width:24px}.module-table th:nth-child(2){width:33%}.module-table th:nth-child(3){width:13%}.module-table th:nth-child(4){width:23%}.module-table th:nth-child(5){width:12%}.module-table th:nth-child(6){width:120px}.module-table th:nth-child(7){width:30px}
+    .scroller{overflow-x:auto}.module-table{min-width:710px}.module-table select{padding:8px 6px;font-size:12px;width:100%;min-width:90px}.module-incompatible{opacity:.55}.icon-btn{background:none;border:0;color:var(--muted);cursor:pointer;font-size:19px;padding:2px 5px}.icon-btn:hover{color:var(--danger)}
+    .help{font-size:12px;color:var(--muted);margin:12px 0 0}.status{font-size:13px;color:var(--muted);min-height:20px;margin-top:10px}.status.error{color:var(--danger)}
+    .metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}.metric{background:var(--panel2);padding:15px;border:1px solid #344359;border-radius:11px}.metric .label{font-size:12px;color:var(--muted);margin-bottom:5px}.metric .value{font-size:clamp(19px,2.4vw,26px);font-weight:750;font-variant-numeric:tabular-nums;line-height:1.2}.metric.feature .value{color:var(--green)}
+    .empty{min-height:210px;display:grid;place-items:center;text-align:center;color:var(--muted);padding:20px;border:1px dashed #3a4c61;border-radius:10px}.hidden{display:none!important}
+    .composition{display:grid;gap:12px}.ship{background:#111b29;border:1px solid #304259;border-radius:11px;padding:14px}.ship-head{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:7px}.ship-head strong{font-size:15px}.ship-details{font-size:12px;color:var(--muted)}.tagline{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.tag{border-radius:6px;border:1px solid #365166;background:#172b3a;padding:3px 7px;font-size:12px}
+    .summary-table{font-size:13px}.summary-table td:last-child,.summary-table th:last-child{text-align:right;font-variant-numeric:tabular-nums}.summary-table td:nth-child(2),.summary-table th:nth-child(2){text-align:right}.em{color:var(--cyan);font-weight:750}.divider{border:0;border-top:1px solid var(--line);margin:16px 0}.smallprint{color:var(--muted);font-size:12px}.totals{display:flex;flex-wrap:wrap;gap:10px}.total{padding:6px 9px;background:#1b293b;border-radius:7px;font-size:12px}
+    .progress{height:14px;display:flex;overflow:hidden;gap:2px;border-radius:5px;background:#17202d;margin:12px 0}.progress > span:nth-child(1),.progress > span:nth-child(3){background:#65778d}.progress > span:nth-child(2){background:#0ca486}
+    .footer{margin-top:22px;color:var(--muted);font-size:12px}.hint{color:var(--muted);font-size:12px}
+    @media(max-width:950px){.columns{grid-template-columns:1fr}}@media(max-width:520px){.wrap{padding:16px 12px 40px}.panel{padding:15px}.grid{gap:9px}.metrics{gap:8px}.metric{padding:11px}.pill{display:inline-block;margin:8px 0 0}.ship-head{align-items:start}}
+  </style>
+  <link rel="stylesheet" href="./verbesserungen.css">
+</head>
+<body>
+  <main class="wrap">
+    <header>
+      <h1>Empire Universe 4 <span>Flottenoptimierer</span></h1>
+      <p>Maximaler langfristiger Ressourcen-Ertrag pro Stunde, mit diskreten Abbauzyklen und tatsächlich montierbaren Modulen. <span class="pill">OFFLINE · KEINE ABHÄNGIGKEITEN</span></p>
+    </header>
+
+    <div class="columns">
+      <div class="stack">
+        <section class="panel">
+          <h2>Flotte und Flug</h2>
+          <div class="grid">
+            <div class="field"><label for="ships">Anzahl Schiffe</label><input id="ships" type="number" min="1" max="300" step="1" value="80"></div>
+            <div class="field"><label for="race">Rasse für rassenexklusive Module</label><select id="race"><option value="other">Andere / keine Sondermodule</option><option value="nemoryx">Nemoryx</option><option value="xyrrh">Xyrrh</option></select></div>
+            <div class="field"><label for="slots">Slots pro Schiff</label><input id="slots" type="number" min="1" max="500" step="1" value="32"></div>
+            <div class="field"><label for="reserved">Reservierte Slots pro Schiff (z. B. Antrieb)</label><input id="reserved" type="number" min="0" step="1" value="4"></div>
+            <div class="field"><label for="baseCargo">Basis-Fracht pro Schiff</label><input id="baseCargo" type="number" min="0" step="1" value="0"></div>
+            <div class="field"><label for="outbound">Hinflug (Minuten)</label><input id="outbound" type="number" min="0" step="0.1" value="5"></div>
+            <div class="field"><label for="inbound">Rückflug (Minuten)</label><input id="inbound" type="number" min="0" step="0.1" value="5"></div>
+            <div class="field"><label for="unload">Entladen / Warten (Minuten)</label><input id="unload" type="number" min="0" step="0.1" value="0"></div>
+            <div class="field"><label for="interval">Minuten pro Abbauaktion</label><input id="interval" type="number" min="0.1" step="0.1" value="5"></div>
+            <div class="field"><label for="resourceRate">Ressourcen pro Minute / Extraktionslevel</label><input id="resourceRate" type="number" min="0.01" step="any" value="1000"></div>
+            <div class="field"><label for="maxMining">Max. Abbauzeit pro Flug (0 = unbegrenzt)</label><input id="maxMining" type="number" min="0" step="any" value="0"></div>
+          </div>
+          <hr class="divider">
+          <h3>Frachtraumlimit der gesamten Flotte</h3>
+          <div class="radio-row">
+            <label><input type="radio" name="limitMode" value="none" checked> Kein Limit</label>
+            <label><input type="radio" name="limitMode" value="limit"> Limit anwenden</label>
+          </div>
+          <div class="field"><label for="cargoLimit">Maximal nutzbarer Frachtraum (Ressourceneinheiten)</label><input id="cargoLimit" type="number" min="1" step="1" value="10000000" disabled></div>
+          <p class="help">Ein Limit begrenzt die <strong>nutzbare Flottenfracht</strong>, nicht den Einbau von Frachtmodulen. Alle Schiffe teilen sich für diese Berechnung den Frachtraum.</p>
+        </section>
+
+        <section class="panel">
+          <h2>Berücksichtigte Module</h2>
+          <p class="smallprint">Häkchen setzen/entfernen und Werte jederzeit ändern. Zusätzliche Module können angelegt werden. Slots, Fracht und Extraktionslevel gelten <strong>je Modul</strong>.</p>
+          <div class="scroller"><table class="module-table">
+            <thead><tr><th title="Berücksichtigen">An</th><th>Name</th><th>Slots</th><th>Fracht</th><th>Level</th><th>Rasse</th><th></th></tr></thead>
+            <tbody id="moduleRows"></tbody>
+          </table></div>
+          <div class="actions" style="margin-top:13px">
+            <button class="btn" type="button" id="addModule">+ Modul hinzufügen</button>
+            <button class="btn" type="button" id="reset">Standardwerte</button>
+          </div>
+          <p class="help">Enthält alle 13 aus deinen Screenshots bekannten Module. Rassenexklusive Module werden nur für die gewählte Rasse berücksichtigt. Module, die nicht in die freien Slots passen (z. B. Jumbo mit 40/45 Slots bei 28 freien Slots), werden automatisch ausgeschlossen. <strong>Hinweis:</strong> Beim Nemoryx-Extraktor steht in der Beschreibung „9“, der grüne Modifier zeigt aber <strong>+14</strong> – hier ist +14 eingetragen.</p>
+        </section>
+        <section class="panel">
+          <h2>Einstellungen speichern</h2>
+          <div class="actions">
+            <button class="btn" id="exportSettings" type="button">Einstellungen als JSON</button>
+            <button class="btn" id="importSettings" type="button">JSON laden</button>
+            <input type="file" id="importFile" accept="application/json,.json" class="hidden">
+          </div>
+          <p class="help">Die aktuellen Einstellungen werden zusätzlich lokal in diesem Browser gespeichert. Keine Daten werden an einen Server übertragen.</p>
+        </section>
+      </div>
+
+      <div class="stack">
+        <section class="panel">
+          <div class="actions"><button class="btn primary" id="calculate" type="button">Beste Flotte berechnen</button><button class="btn" id="downloadPlan" type="button" disabled>Bauplan als TXT</button></div>
+          <div id="status" class="status" role="status" aria-live="polite">Bereit zur Berechnung.</div>
+          <div id="empty" class="empty">Nach der Berechnung erscheinen hier optimaler Modul-Mix, Abbauzeit und Ressourcen pro Stunde.</div>
+          <div id="results" class="hidden">
+            <div class="metrics">
+              <div class="metric feature"><div class="label">Ressourcen pro Stunde (langfristig)</div><div class="value" id="hourRate">–</div></div>
+              <div class="metric"><div class="label">Optimale Abbauzeit</div><div class="value" id="miningTime">–</div></div>
+              <div class="metric"><div class="label">Extraktionsstärke gesamt</div><div class="value" id="miningLevel">–</div></div>
+              <div class="metric"><div class="label">Frachtkapazität installiert</div><div class="value" id="cargoTotal">–</div></div>
+              <div class="metric"><div class="label">Ressourcen pro Flugrunde</div><div class="value" id="perCycle">–</div></div>
+              <div class="metric"><div class="label">Gesamtdauer einer Flugrunde</div><div class="value" id="cycleTime">–</div></div>
+            </div>
+            <div class="progress" title="Hinflug / Abbau / Rückflug und Entladen"><span id="barOut"></span><span id="barMining"></span><span id="barReturn"></span></div>
+            <div class="smallprint" id="cycleDescription"></div>
+            <hr class="divider">
+            <h2>Optimale Flottenzusammensetzung</h2>
+            <div id="composition" class="composition"></div>
+            <hr class="divider">
+            <h2>Gesamter Modulbedarf</h2>
+            <div id="totalModules"></div>
+            <hr class="divider">
+            <h2>Vergleich alternativer Abbauzeiten</h2>
+            <div class="scroller"><table class="summary-table"><thead><tr><th>Abbauzeit</th><th>Stärke</th><th>Ressourcen / h</th></tr></thead><tbody id="alternatives"></tbody></table></div>
+            <p class="help">Jede Zeile wird mit einer eigenen, dafür optimalen Flottenzusammensetzung berechnet.</p>
+          </div>
+        </section>
+        <section class="panel">
+          <h2>Berechnungsannahmen</h2>
+          <p class="smallprint">Exakte ganzzahlige Optimierung für die aktivierten Module: Zuerst werden alle erreichbaren optimalen Schiffsausrüstungen nach Extraktionslevel ermittelt; anschließend wird die beste Verteilung auf sämtliche Schiffe berechnet. Die Abbauzeit wird in ganzen Abbauaktionen optimiert. Keine Zufallssimulation oder Prozent-Schätzung.</p>
+          <p class="smallprint">Vorausgesetzt wird gemeinsamer Frachtraum der Flotte, additiver Frachtraum und additiver Extraktionslevel, gleichzeitiger Abbau und keine Rohstofferschöpfung. Übervolle letzte Abbauaktionen werden bei Erreichen der Kapazität abgeschnitten. Die ausgewiesenen Ressourcen/h sind der langfristige Durchschnitt bei wiederholten vollständigen Flugrunden, nicht zwingend die Entladungen innerhalb einer angefangenen Kalenderstunde.</p>
+        </section>
+      </div>
+    </div>
+    <p class="footer">Läuft als einzelne HTML-Datei ohne CDN oder externe Bibliotheken. Modulnamen und -werte sind manuell änderbar, damit spätere Spielupdates berücksichtigt werden können.</p>
+  </main>
+<script>
+'use strict';
+
+const defaults = {
+  ships:80, slots:32, reserved:4, baseCargo:0, outbound:5, inbound:5, unload:0,
+  interval:5, resourceRate:1000, maxMining:0, limitMode:'none', cargoLimit:10000000, race:'other', schemaVersion:2,
+  modules:[
+    {id:'cargo-s',name:'Fracht S',slots:1,cargo:17000,extraction:0,enabled:true,race:'all'},
+    {id:'cargo-m',name:'Fracht M',slots:3,cargo:75000,extraction:0,enabled:true,race:'all'},
+    {id:'cargo-xl',name:'Fracht XL',slots:10,cargo:600000,extraction:0,enabled:true,race:'all'},
+    {id:'cargo-xl230',name:'Fracht XL-230',slots:16,cargo:1400000,extraction:0,enabled:true,race:'all'},
+    {id:'cargo-xl270',name:'Fracht XL-270',slots:17,cargo:2100000,extraction:0,enabled:true,race:'all'},
+    {id:'cargo-mini',name:'Mini-Fracht',slots:2,cargo:600000,extraction:0,enabled:true,race:'all'},
+    {id:'cargo-jumbo',name:'Jumbo-Fracht',slots:45,cargo:18000000,extraction:0,enabled:true,race:'all'},
+    {id:'cargo-xyrrh',name:'Verbesserter Mini-Frachtraum – Xyrrh',slots:6,cargo:3000000,extraction:0,enabled:true,race:'xyrrh'},
+    {id:'laser-i',name:'Asteroiden-Laser I',slots:5,cargo:0,extraction:1,enabled:true,race:'all'},
+    {id:'laser-ii',name:'Asteroiden-Laser II',slots:8,cargo:0,extraction:3,enabled:true,race:'all'},
+    {id:'laser-mini',name:'Mini-Asteroiden-Laser',slots:4,cargo:0,extraction:3,enabled:true,race:'all'},
+    {id:'laser-jumbo',name:'Jumbo-Asteroiden-Laser',slots:40,cargo:0,extraction:40,enabled:true,race:'all'},
+    {id:'laser-nemoryx',name:'Verbesserter Mini-Asteroidenextraktor – Nemoryx',slots:8,cargo:0,extraction:14,enabled:true,race:'nemoryx'}
+  ]
+};
+const $ = id => document.getElementById(id);
+const format = new Intl.NumberFormat('de-DE',{maximumFractionDigits:2});
+const integers = new Intl.NumberFormat('de-DE',{maximumFractionDigits:0});
+const clone = data => JSON.parse(JSON.stringify(data));
+const number = (value,label,{min=0,integer=false,max=Number.MAX_SAFE_INTEGER}={}) => {
+  const n=Number(value);
+  if(value === '' || !Number.isFinite(n) || n < min || n > max || (integer && !Number.isSafeInteger(n)))
+    throw new Error(`${label}: ungültiger Wert${integer?' (ganze Zahl erforderlich)':''}.`);
+  return n;
+};
+let modules=clone(defaults.modules);
+let currentPlan=null;
+
+function renderModules(){
+  const body=$('moduleRows'); body.replaceChildren();
+  const race=$('race').value;
+  const freeSlots=Math.max(0,Number($('slots').value)-Number($('reserved').value));
+  for(const module of modules){
+    const tr=document.createElement('tr');
+    const isRaceAllowed=module.race==='all'||module.race===race;
+    const fits=Number(module.slots)<=freeSlots;
+    if(!isRaceAllowed||!fits){tr.classList.add('module-incompatible');tr.title=!isRaceAllowed?'Nicht für die ausgewählte Rasse verfügbar.':'Zu viele Slots für dieses Schiff.';}
+    const checkboxCell=document.createElement('td');
+    const checkbox=document.createElement('input');checkbox.type='checkbox';checkbox.checked=module.enabled;checkbox.disabled=!isRaceAllowed||!fits;checkbox.title=tr.title||'Modul berücksichtigen';
+    checkbox.addEventListener('change',()=>{module.enabled=checkbox.checked;dirty();});checkboxCell.append(checkbox);tr.append(checkboxCell);
+    for(const [key,type,min] of [['name','text',null],['slots','number',1],['cargo','number',0],['extraction','number',0]]){
+      const td=document.createElement('td');const input=document.createElement('input');input.type=type;input.value=module[key];
+      input.setAttribute('aria-label',`${key} für ${module.name}`);
+      if(type==='number'){input.min=min;input.step='1'}
+      input.addEventListener('input',()=>{module[key]=input.value;dirty();});
+      if(key==='slots')input.addEventListener('change',renderModules);
+      td.append(input);tr.append(td);
+    }
+    const raceCell=document.createElement('td'),raceSelect=document.createElement('select');
+    for(const [value,label] of [['all','Alle'],['nemoryx','Nemoryx'],['xyrrh','Xyrrh']]){
+      const opt=document.createElement('option');opt.value=value;opt.textContent=label;raceSelect.append(opt);
+    }
+    raceSelect.value=module.race||'all';
+    raceSelect.setAttribute('aria-label',`Rassenbeschränkung für ${module.name}`);
+    raceSelect.addEventListener('change',()=>{module.race=raceSelect.value;renderModules();dirty();});
+    raceCell.append(raceSelect);tr.append(raceCell);
+    const deleteCell=document.createElement('td'),deleteButton=document.createElement('button');
+    deleteButton.type='button';deleteButton.className='icon-btn';deleteButton.textContent='×';deleteButton.title=`${module.name} entfernen`;
+    deleteButton.addEventListener('click',()=>{modules=modules.filter(m=>m!==module);renderModules();dirty();});
+    deleteCell.append(deleteButton);tr.append(deleteCell);body.append(tr);
+  }
+}
+function inputs(){
+  const read=id=>$(id).value;
+  const race=read('race');
+  const result={
+    ships:number(read('ships'),'Anzahl Schiffe',{min:1,max:300,integer:true}),race,
+    slots:number(read('slots'),'Slots pro Schiff',{min:1,max:500,integer:true}),
+    reserved:number(read('reserved'),'Reservierte Slots',{integer:true}),
+    baseCargo:number(read('baseCargo'),'Basis-Fracht',{integer:true}),
+    outbound:number(read('outbound'),'Hinflug'),inbound:number(read('inbound'),'Rückflug'),
+    unload:number(read('unload'),'Entladezeit'),interval:number(read('interval'),'Abbauintervall',{min:0.001}),
+    resourceRate:number(read('resourceRate'),'Ressourcen pro Minute',{min:0.001}),
+    maxMining:number(read('maxMining'),'Maximale Abbauzeit'),
+    limitMode:document.querySelector('input[name=limitMode]:checked').value,
+    cargoLimit:number(read('cargoLimit'),'Frachtlimit',{min:1,integer:true}),
+    modules:modules.filter(m=>m.enabled && ((m.race||'all')==='all'||m.race===race)).map((m,i)=>({id:m.id,name:String(m.name).trim(),slots:number(m.slots,`Slots von Modul ${i+1}`,{min:1,integer:true}),cargo:number(m.cargo,`Fracht von Modul ${i+1}`,{integer:true}),extraction:number(m.extraction,`Extraktionslevel von Modul ${i+1}`,{integer:true})}))
+  };
+  if(result.reserved >= result.slots)throw new Error('Die reservierten Slots müssen kleiner als die Slots pro Schiff sein.');
+  if(result.modules.some(m=>!m.name || (m.cargo===0 && m.extraction===0)))throw new Error('Aktive Module benötigen einen Namen und mindestens einen Effekt (Fracht oder Extraktion).');
+  if(!result.modules.some(m=>m.extraction>0))throw new Error('Bitte mindestens ein Extraktionsmodul aktivieren.');
+  if(!result.modules.some(m=>m.cargo>0) && result.baseCargo===0)throw new Error('Es gibt keinen nutzbaren Frachtraum.');
+  if(result.maxMining>0 && result.maxMining<result.interval)throw new Error('Die maximale Abbauzeit muss mindestens eine Abbauaktion erlauben.');
+  return result;
+}
+function getRawSettings(){
+  const ids=['ships','slots','reserved','baseCargo','outbound','inbound','unload','interval','resourceRate','maxMining','cargoLimit'];
+  const data=Object.fromEntries(ids.map(id=>[id,$(id).value]));
+  data.limitMode=document.querySelector('input[name=limitMode]:checked').value;
+  data.race=$('race').value;
+  data.schemaVersion=2;
+  data.modules=clone(modules);return data;
+}
+function setSettings(data){
+  const src={...defaults,...data};
+  for(const id of ['ships','slots','reserved','baseCargo','outbound','inbound','unload','interval','resourceRate','maxMining','cargoLimit'])$(id).value=src[id];
+  $('race').value=['nemoryx','xyrrh'].includes(src.race)?src.race:'other';
+  const mode=src.limitMode==='limit'?'limit':'none';
+  document.querySelector(`input[name=limitMode][value="${mode}"]`).checked=true;
+  $('cargoLimit').disabled=mode!=='limit';
+  if(!Array.isArray(src.modules)||src.modules.length>100)throw new Error('Die Modulliste in der Datei ist ungültig.');
+  // Previous HTML versions had only five modules. Preserve edited and custom
+  // settings, adding only the new modules on first migration to version 2.
+  const incoming=Number(data.schemaVersion)>=2?src.modules:[...src.modules,...defaults.modules.filter(m=>!src.modules.some(existing=>existing.id===m.id))];
+  modules=incoming.map((m,i)=>({id:String(m.id||`custom-${i}`),name:String(m.name??''),slots:m.slots??1,cargo:m.cargo??0,extraction:m.extraction??0,enabled:Boolean(m.enabled),race:['nemoryx','xyrrh'].includes(m.race)?m.race:'all'}));
+  renderModules();dirty();
+}
+function dirty(){
+  currentPlan=null;$('downloadPlan').disabled=true;$('results').classList.add('hidden');$('empty').classList.remove('hidden');
+  $('status').textContent='Einstellungen geändert. „Beste Flotte berechnen“ auswählen.';
+  $('status').classList.remove('error');
+  try{localStorage.setItem('eu4-fleet-optimizer-settings',JSON.stringify(getRawSettings()));}catch(_){}
+}
+
+// Builds every single-ship loadout that could maximize cargo for an exact integer
+// extraction level. Unbounded knapsack by used slot count; immutable parent
+// pointers allow exact reconstruction of installed modules.
+function buildShipFrontier(data){
+  const free=data.slots-data.reserved;
+  const mods=data.modules.filter(m=>m.slots<=free);
+  if(!mods.some(m=>m.extraction>0))throw new Error('Kein aktives Extraktionsmodul passt in die freien Slots.');
+  const bySlots=Array.from({length:free+1},()=>new Map());
+  bySlots[0].set(0,{cargo:0,level:0,used:0,prev:null,moduleIndex:-1});
+  for(let used=0;used<=free;used++){
+    for(const [level,node] of bySlots[used]){
+      for(let i=0;i<mods.length;i++){
+        const m=mods[i],nextSlots=used+m.slots;
+        if(nextSlots>free)continue;
+        const nextLevel=level+m.extraction,nextCargo=node.cargo+m.cargo;
+        const existing=bySlots[nextSlots].get(nextLevel);
+        if(!existing || nextCargo>existing.cargo){
+          bySlots[nextSlots].set(nextLevel,{cargo:nextCargo,level:nextLevel,used:nextSlots,prev:node,moduleIndex:data.modules.indexOf(m)});
+        }
+      }
+    }
+  }
+  const best=new Map();
+  for(const slotMap of bySlots)for(const [level,node] of slotMap){
+    if(!best.has(level)||node.cargo>best.get(level).cargo)best.set(level,node);
+  }
+  // A stronger loadout with at least as much cargo always dominates a weaker one.
+  let biggest=-1;const frontier=[];
+  for(const [level,node] of [...best.entries()].sort((a,b)=>b[0]-a[0])){
+    if(node.cargo>biggest){frontier.push({level,cargo:node.cargo,node});biggest=node.cargo;}
+  }
+  if(frontier.length===0)throw new Error('Keine passende Modulkombination gefunden.');
+  const largestLevel=Math.max(...frontier.map(x=>x.level));
+  if(data.ships*(data.ships*largestLevel+1)>2500000)
+    throw new Error('Diese Eingabe ist für die lokale Optimierung zu groß. Reduziere die Schiffszahl oder die Extraktionslevel pro Modul.');
+  return frontier;
+}
+
+// Exact fleet DP. For each possible TOTAL extraction level, preserve maximum
+// achievable TOTAL cargo. This suffices because throughput is monotone in both.
+function buildFleetFrontier(data,shipOptions){
+  const maxLevel=Math.max(...shipOptions.map(x=>x.level));
+  let previous=new Float64Array(1); previous[0]=0;
+  const parent=[null];
+  for(let n=1;n<=data.ships;n++){
+    const next=new Float64Array(n*maxLevel+1).fill(-1);
+    const chosen=new Int32Array(next.length).fill(-1);
+    for(let level=0;level<previous.length;level++){
+      if(previous[level]<0)continue;
+      const cargo=previous[level];
+      for(let optionIdx=0;optionIdx<shipOptions.length;optionIdx++){
+        const opt=shipOptions[optionIdx];const newLevel=level+opt.level;
+        const newCargo=cargo+opt.cargo;
+        if(newCargo>next[newLevel]){next[newLevel]=newCargo;chosen[newLevel]=optionIdx;}
+      }
+    }
+    parent.push(chosen);previous=next;
+  }
+  return {cargoByLevel:previous,parent,shipOptions};
+}
+function resultForTime(level,rawCargo,minutes,data){
+  const installedCargo=rawCargo+data.ships*data.baseCargo;
+  const usableCargo=data.limitMode==='limit'?Math.min(installedCargo,data.cargoLimit):installedCargo;
+  const mined=level*data.resourceRate*minutes;
+  const perTrip=Math.min(usableCargo,mined);
+  const travel=data.outbound+data.inbound+data.unload;
+  return {rate:perTrip*60/(travel+minutes),level,installedCargo,usableCargo,perTrip,minutes,cycle:travel+minutes};
+}
+function bestAtTime(fleet,data,minutes){
+  let best=null;
+  for(let level=1;level<fleet.cargoByLevel.length;level++){
+    if(fleet.cargoByLevel[level]<0)continue;
+    const result=resultForTime(level,fleet.cargoByLevel[level],minutes,data);
+    if(!best || result.rate>best.rate)best=result;
+  }
+  return best;
+}
+function solve(data){
+  const shipOptions=buildShipFrontier(data);
+  const fleet=buildFleetFrontier(data,shipOptions);
+  const maxSteps=data.maxMining>0?Math.floor((data.maxMining+1e-9)/data.interval):Infinity;
+  let best=null;
+  for(let level=1;level<fleet.cargoByLevel.length;level++){
+    const cargo=fleet.cargoByLevel[level];
+    if(cargo<0)continue;
+    const capacity=data.limitMode==='limit'?Math.min(cargo+data.ships*data.baseCargo,data.cargoLimit):cargo+data.ships*data.baseCargo;
+    if(capacity<=0)continue;
+    // At fixed strength/cargo, throughput rises until full and falls afterwards.
+    // So only the discrete ticks immediately below and above the fill point matter.
+    const approximate=capacity/(level*data.resourceRate*data.interval);
+    const low=Math.max(1,Math.min(maxSteps,Math.floor(approximate)));
+    const high=Math.max(1,Math.min(maxSteps,Math.ceil(approximate)));
+    for(const steps of new Set([low,high])){
+      if(steps>maxSteps)continue;
+      const value=resultForTime(level,cargo,steps*data.interval,data);
+      if(!best||value.rate>best.rate+1e-9 || (Math.abs(value.rate-best.rate)<1e-9 && value.cycle<best.cycle))best=value;
+    }
+  }
+  if(!best||best.rate<=0)throw new Error('Keine Konfiguration kann mit den aktuellen Modulen Ressourcen transportieren.');
+  // Trace back fleet layouts from the exact optimal extraction level.
+  const byOption=new Map();let level=best.level;
+  for(let n=data.ships;n>0;n--){
+    const idx=fleet.parent[n][level];
+    if(idx<0)throw new Error('Interner Rekonstruktionsfehler.');
+    byOption.set(idx,(byOption.get(idx)||0)+1);
+    level-=fleet.shipOptions[idx].level;
+  }
+  const compositions=[...byOption].map(([idx,count])=>{
+    const opt=fleet.shipOptions[idx],counts=new Map();let node=opt.node;
+    while(node.prev){counts.set(node.moduleIndex,(counts.get(node.moduleIndex)||0)+1);node=node.prev;}
+    return {count,level:opt.level,cargo:opt.cargo,used:opt.node.used,modules:[...counts].sort((a,b)=>a[0]-b[0]).map(([moduleIdx,quantity])=>({name:data.modules[moduleIdx].name,quantity}))};
+  }).sort((a,b)=>b.level-a.level || b.cargo-a.cargo);
+  return {...best,compositions,fleet,data};
+}
+
+function el(tag,txt,cls){const e=document.createElement(tag);if(txt!==undefined)e.textContent=txt;if(cls)e.className=cls;return e;}
+function renderResult(plan){
+  const {data}=plan;
+  const set=(id,text)=>$(id).textContent=text;
+  set('hourRate',integers.format(plan.rate));
+  set('miningTime',`${format.format(plan.minutes)} Min.`);
+  set('miningLevel',integers.format(plan.level));
+  set('cargoTotal',integers.format(plan.installedCargo));
+  set('perCycle',integers.format(plan.perTrip));
+  set('cycleTime',`${format.format(plan.cycle)} Min.`);
+  const total=plan.cycle;
+  $('barOut').style.flex=data.outbound/total;
+  $('barMining').style.flex=plan.minutes/total;
+  $('barReturn').style.flex=(data.inbound+data.unload)/total;
+  set('cycleDescription',`${format.format(data.outbound)} Min. Hinflug + ${format.format(plan.minutes)} Min. Abbau (${integers.format(Math.round(plan.minutes/data.interval))} Aktionen) + ${format.format(data.inbound)} Min. Rückflug + ${format.format(data.unload)} Min. Entladen. ${plan.installedCargo!==plan.usableCargo?'Nutzbarer Frachtraum durch Limit: '+integers.format(plan.usableCargo)+'. ':''}Abbauleistung: ${integers.format(plan.level*data.resourceRate)} Ressourcen/Minute.`);
+  const composition=$('composition');composition.replaceChildren();
+  const totalModules=new Map();
+  for(const item of plan.compositions){
+    const ship=el('div',undefined,'ship');
+    const head=el('div',undefined,'ship-head');head.append(el('strong',`${item.count} × Fregatte`),el('span',`Stärke ${integers.format(item.level)}`,'em'));ship.append(head);
+    ship.append(el('div',`${integers.format(item.cargo+data.baseCargo)} Fracht / Schiff · ${item.used+data.reserved} von ${data.slots} Slots belegt (${data.reserved} reserviert)`,'ship-details'));
+    const tags=el('div',undefined,'tagline');
+    for(const module of item.modules){tags.append(el('span',`${module.quantity}× ${module.name}`,'tag'));totalModules.set(module.name,(totalModules.get(module.name)||0)+module.quantity*item.count);}
+    tags.append(el('span',`${data.reserved} Antriebs-/Reserveslots`,'tag'));
+    ship.append(tags);composition.append(ship);
+  }
+  const totals=$('totalModules');totals.replaceChildren();
+  for(const [name,quantity] of [...totalModules].sort((a,b)=>a[0].localeCompare(b[0],'de'))){totals.append(el('span',`${integers.format(quantity)} × ${name}`,'total'));}
+  const tbody=$('alternatives');tbody.replaceChildren();
+  const step=data.interval,center=Math.round(plan.minutes/step);
+  const ticks=new Set([1,2,3,4,6,9,12,18,24,center-2,center-1,center,center+1,center+2].filter(k=>k>=1 && (data.maxMining===0 || k*step<=data.maxMining+1e-9)));
+  const sorted=[...ticks].sort((a,b)=>a-b);
+  for(const tick of sorted){
+    const time=tick*step,alt=bestAtTime(plan.fleet,data,time);
+    if(!alt)continue;
+    const tr=el('tr');
+    if(tick===center)tr.className='em';
+    tr.append(el('td',`${format.format(time)} Min.`),el('td',integers.format(alt.level)),el('td',integers.format(alt.rate)));
+    tbody.append(tr);
+  }
+  $('empty').classList.add('hidden');$('results').classList.remove('hidden');
+  $('downloadPlan').disabled=false;
+}
+function download(filename,text,contentType){
+  const blob=new Blob([text],{type:contentType});
+  const url=URL.createObjectURL(blob),link=document.createElement('a');
+  link.href=url;link.download=filename;document.body.append(link);link.click();link.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1500);
+}
+function exportPlan(plan){
+  const data=plan.data;
+  const lines=[
+    'Empire Universe 4 – Optimaler Flottenbauplan',
+    '===========================================',
+    `Schiffe: ${data.ships} | Slots pro Schiff: ${data.slots} | Reserviert: ${data.reserved}`,
+    `Ressourcen/h: ${integers.format(plan.rate)}`,
+    `Abbauzeit: ${format.format(plan.minutes)} Minuten`,
+    `Abbauaktionen: ${Math.round(plan.minutes/data.interval)}`,
+    `Abbaustärke: ${integers.format(plan.level)}`,
+    `Fracht installiert: ${integers.format(plan.installedCargo)}`,
+    `Fracht effektiv: ${integers.format(plan.usableCargo)}`,
+    `Ressourcen pro Runde: ${integers.format(plan.perTrip)}`,
+    `Flugdauer je Runde inkl. Abbau: ${format.format(plan.cycle)} Minuten`,
+    '', 'Ausrüstungen:',
+    ...plan.compositions.flatMap(ship=>[`${ship.count}× Fregatte (Stärke ${ship.level}, Fracht ${integers.format(ship.cargo+data.baseCargo)}):`,...ship.modules.map(m=>`  ${m.quantity}× ${m.name}`),`  + ${data.reserved} reservierte Slots`, '']),
+    'Hinweis: gemeinsamer Flottenfrachterraum und additive Modulleistung angenommen.'
+  ];
+  download('EU4-Flottenbauplan.txt',lines.join('\n'),'text/plain;charset=utf-8');
+}
+function run(){
+  $('status').classList.remove('error');$('status').textContent='Berechne optimale Flottenkombination …';
+  $('calculate').disabled=true;
+  setTimeout(()=>{
+    try{
+      const data=inputs();currentPlan=solve(data);renderResult(currentPlan);
+      $('status').textContent='Optimaler Bauplan berechnet (exakte ganzzahlige Suche).';
+      try{localStorage.setItem('eu4-fleet-optimizer-settings',JSON.stringify(getRawSettings()));}catch(_){}
+    }catch(error){
+      currentPlan=null;$('status').classList.add('error');$('status').textContent=error instanceof Error?error.message:String(error);
+      $('results').classList.add('hidden');$('empty').classList.remove('hidden');$('downloadPlan').disabled=true;
+    }finally{$('calculate').disabled=false;}
+  },25);
+}
+
+$('race').addEventListener('change',()=>{renderModules();dirty();});
+document.querySelectorAll('input:not(#importFile)').forEach(input=>{
+  input.addEventListener('input',()=>{if(input.name==='limitMode')$('cargoLimit').disabled=input.value!=='limit';dirty();if(input.id==='slots'||input.id==='reserved')renderModules();});
+  input.addEventListener('change',()=>{if(input.name==='limitMode')$('cargoLimit').disabled=document.querySelector('input[name=limitMode]:checked').value!=='limit';dirty();});
+});
+$('addModule').addEventListener('click',()=>{
+  modules.push({id:`new-${Date.now()}-${modules.length}`,name:'Neues Modul',slots:1,cargo:0,extraction:1,enabled:false,race:'all'});
+  renderModules();dirty();
+});
+$('reset').addEventListener('click',()=>{try{localStorage.removeItem('eu4-fleet-optimizer-settings');}catch(_){}setSettings(clone(defaults));run();});
+$('calculate').addEventListener('click',run);
+$('downloadPlan').addEventListener('click',()=>{if(currentPlan)exportPlan(currentPlan);});
+$('exportSettings').addEventListener('click',()=>download('EU4-Flotteneinstellungen.json',JSON.stringify(getRawSettings(),null,2),'application/json;charset=utf-8'));
+$('importSettings').addEventListener('click',()=>$('importFile').click());
+$('importFile').addEventListener('change',async event=>{
+  const file=event.target.files[0];if(!file)return;
+  try{const data=JSON.parse(await file.text());if(!data||typeof data!=='object')throw new Error('Keine gültigen Einstellungen.');setSettings(data);run();}
+  catch(error){$('status').classList.add('error');$('status').textContent=`Import fehlgeschlagen: ${error.message}`;}
+  finally{event.target.value='';}
+});
+try{
+  const saved=localStorage.getItem('eu4-fleet-optimizer-settings');
+  if(saved)setSettings(JSON.parse(saved));else setSettings(clone(defaults));
+}catch(error){setSettings(clone(defaults));}
+run();
+</script>
+<script src="./verbesserungen.js"></script>
+</body>
+</html>
