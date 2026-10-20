@@ -1,0 +1,24 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Optimierer prüfen
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: JavaScript-Syntax prüfen
+        run: node --check asteroiden-mining-flottenoptimierer/verbesserungen.js
+      - name: Berechnung mit Referenzfällen prüfen
+        run: node --test tests/optimizer.test.mjs
