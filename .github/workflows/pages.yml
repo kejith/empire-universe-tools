@@ -28,10 +28,18 @@ jobs:
       - name: Pages vorbereiten
         uses: actions/configure-pages@v5
 
+      - name: Nur öffentliche HTML-, CSS- und JavaScript-Dateien bereitstellen
+        run: |
+          mkdir -p _site/asteroiden-mining-flottenoptimierer
+          cp index.html _site/
+          cp asteroiden-mining-flottenoptimierer/index.html _site/asteroiden-mining-flottenoptimierer/
+          cp asteroiden-mining-flottenoptimierer/verbesserungen.css _site/asteroiden-mining-flottenoptimierer/
+          cp asteroiden-mining-flottenoptimierer/verbesserungen.js _site/asteroiden-mining-flottenoptimierer/
+
       - name: Webseite packen
         uses: actions/upload-pages-artifact@v4
         with:
-          path: .
+          path: ./_site
 
       - name: Auf GitHub Pages bereitstellen
         id: deployment
