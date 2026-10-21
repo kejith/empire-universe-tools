@@ -15,7 +15,7 @@ const {solve, resultForTime, bestAtTime} = vm.runInNewContext(
 function fixture(overrides={}) {
   return {
     ships:2, slots:10, reserved:2, baseCargo:0, outbound:5, inbound:5,
-    unload:0, interval:5, resourceRate:1000, maxMining:0,
+    interval:5, resourceRate:1000, maxMining:0,
     limitMode:'none', cargoLimit:10000000,
     modules:[
       {id:'laser',name:'Laser',slots:4,cargo:0,extraction:3},
@@ -42,7 +42,7 @@ function brute(d) {
     for(let k=1;k<=40;k++) {
       if(d.maxMining>0 && k*d.interval>d.maxMining)break;
       const t=k*d.interval;
-      const rate=Math.min(capacity,level*d.resourceRate*t)*60/(d.outbound+d.inbound+d.unload+t);
+      const rate=Math.min(capacity,level*d.resourceRate*t)*60/(d.outbound+d.inbound+t);
       best=Math.max(best,rate);
     }
   }
@@ -54,7 +54,7 @@ test('exakte Flottenoptimierung stimmt mit vollständiger Durchzählung überein
     {},
     {cargoLimit:20000,limitMode:'limit'},
     {ships:2,baseCargo:1500},
-    {outbound:0,inbound:0,unload:3},
+    {outbound:0,inbound:3},
     {maxMining:10},
     {modules:[{id:'combo',name:'Hybrid',slots:3,cargo:12000,extraction:2}, {id:'fracht',name:'Fracht',slots:2,cargo:25000,extraction:0}]}
   ]) {
