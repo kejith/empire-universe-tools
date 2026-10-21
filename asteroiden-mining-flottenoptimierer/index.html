@@ -5,15 +5,10 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="color-scheme" content="dark">
   <title>Asteroiden-Mining-Flottenoptimierer | Empire Universe Tools</title>
-  <meta name="description" content="Berechne deine optimale Empire Universe 4 Asteroiden-Mining-Flotte: Abbaustärke, Frachtraum, Flugzeiten und maximaler Ressourcenertrag pro Stunde. Kostenlos, auf Deutsch, ohne Login.">
-  <meta name="robots" content="index, follow">
-  <meta property="og:type" content="website">
-  <meta property="og:locale" content="de_DE">
-  <meta property="og:site_name" content="Empire Universe Tools">
+  <meta name="description" content="Berechne die beste Asteroiden-Mining-Flotte für Empire Universe 4 mit Frachtmodulen, Abbau-Effizienz und maximalen Modulstückzahlen. Kostenlos und auf Deutsch.">
+  <meta property="og:type" content="website"><meta property="og:locale" content="de_DE">
   <meta property="og:title" content="Asteroiden-Mining-Flottenoptimierer">
-  <meta property="og:description" content="Plane Fregatten, Mining-Laser, Frachtraum und Flugzyklen. Berechne den optimalen Ressourcen-Ertrag pro Stunde und teile deine Konfiguration.">
-  <meta property="og:url" content="https://kejith.github.io/empire-universe-tools/asteroiden-mining-flottenoptimierer/">
-  <meta name="twitter:card" content="summary">
+  <meta property="og:description" content="Optimiere Asteroidenabbau, Fracht und Flugzeiten mit begrenztem Modulbestand und teile deine Konfiguration.">
   <link rel="canonical" href="https://kejith.github.io/empire-universe-tools/asteroiden-mining-flottenoptimierer/">
   <style>
     :root{--bg:#0b101b;--panel:#141c2b;--panel2:#1b2637;--line:#2a394d;--text:#e5edf8;--muted:#9badc5;--cyan:#39d0ee;--green:#56ddb0;--danger:#ff8b95;--radius:14px}
@@ -38,8 +33,57 @@
     .progress{height:14px;display:flex;overflow:hidden;gap:2px;border-radius:5px;background:#17202d;margin:12px 0}.progress > span:nth-child(1),.progress > span:nth-child(3){background:#65778d}.progress > span:nth-child(2){background:#0ca486}
     .footer{margin-top:22px;color:var(--muted);font-size:12px}.hint{color:var(--muted);font-size:12px}
     @media(max-width:950px){.columns{grid-template-columns:1fr}}@media(max-width:520px){.wrap{padding:16px 12px 40px}.panel{padding:15px}.grid{gap:9px}.metrics{gap:8px}.metric{padding:11px}.pill{display:inline-block;margin:8px 0 0}.ship-head{align-items:start}}
+  
+/* Verbessertes UI */
+:root{--bg:#080e18;--panel:#101b2b;--panel2:#172438;--line:#304059;--cyan:#49d7f0;--green:#67e0ba}
+.wrap{max-width:1320px;padding-top:38px}
+header{border-bottom:1px solid #2c3e54;padding-bottom:26px;margin-bottom:26px}
+.produktkennung{font-size:11px;font-weight:800;color:#74d0e5;letter-spacing:.19em;margin-bottom:12px}
+header h1{max-width:900px;font-size:clamp(30px,4.4vw,50px);letter-spacing:-.055em}
+header p{max-width:860px;line-height:1.65;font-size:15px}
+.navigation{display:flex;gap:20px;flex-wrap:wrap;margin-top:17px}
+a{color:#7de3f3;text-decoration-thickness:1px;text-underline-offset:3px}
+.panel{box-shadow:0 9px 32px #0002;border-color:#293b53}
+.metric.feature{background:linear-gradient(145deg,#14392e,#162838);border-color:#2e7967}
+.metric.feature .value{font-size:clamp(23px,2.8vw,31px)}
+.composition .ship{border-left:3px solid #40aeca}
+.share{background:#0a5f73;border-color:#247f96}
+#shareStatus:empty{display:none}
+#totalModules{display:flex;gap:6px;flex-wrap:wrap}
+.erklaerung{margin-top:18px;padding:18px;background:#0d2330;border:1px solid #28586a;border-radius:10px}
+.erklaerung h2{margin-bottom:12px}
+.warum-inhalt{display:grid;grid-template-columns:repeat(auto-fit,minmax(195px,1fr));gap:13px}
+.begruendung{background:#142c3c;border:1px solid #2d4e60;border-radius:9px;padding:13px}
+.begruendung strong{display:block;color:#a6effa;margin-bottom:5px;font-size:13px}
+.begruendung p{margin:0;font-size:12px;color:#c6d7e4;line-height:1.6}
+.vergleichsbalken{width:100px;height:9px;border-radius:5px;background:#213245;overflow:hidden}
+.vergleichsbalken span{height:100%;display:block;background:linear-gradient(90deg,#0f90a8,#61dfba);border-radius:5px}
+#alternatives td:last-child,#alternatives th:last-child{text-align:left}
+[hidden]{display:none!important}
+/* Modulfelder als Karten statt horizontal scrollender Tabelle. */
+.scroller:has(.module-table){overflow:visible}
+.module-table{display:block;min-width:0!important;width:100%;border:0}
+.module-table thead{display:none}
+.module-table tbody{display:grid;gap:10px}
+.module-table tr{display:grid;grid-template-columns:25px repeat(3,minmax(0,1fr)) 24px;column-gap:9px;row-gap:7px;border:1px solid #30455b;border-radius:11px;padding:11px;background:#101e2e;min-width:0}
+.module-table td{display:flex;flex-direction:column;gap:3px;min-width:0;width:auto;padding:0!important;border:0!important;text-align:left!important}
+.module-table td::before{content:attr(data-label);display:block;color:#93a9be;font-size:11px;font-weight:650;min-height:16px}
+.module-table td:first-child{grid-column:1;grid-row:1;justify-content:center;align-items:center}
+.module-table td:first-child::before,.module-table td:nth-child(2)::before,.module-table td:last-child::before{display:none}
+.module-table td:nth-child(2){grid-column:2/5;grid-row:1;justify-content:center}
+.module-table td:nth-child(3){grid-column:2;grid-row:2}
+.module-table td:nth-child(4){grid-column:3;grid-row:2}
+.module-table td:nth-child(5){grid-column:4;grid-row:2}
+.module-table td:nth-child(6){grid-column:2;grid-row:3}
+.module-table td:nth-child(7){grid-column:3/5;grid-row:3}
+.module-table td:nth-child(8){grid-column:5;grid-row:1;justify-content:center}
+.module-table input[type=number],.module-table input[type=text],.module-table select{min-width:0!important;width:100%;max-width:100%;font-size:13px;padding:8px 6px}
+.module-table input[type=checkbox]{width:15px;height:15px;margin:0}
+.module-table .icon-btn{padding:0;font-size:23px;line-height:1;min-width:24px}
+.module-table .module-incompatible{opacity:.6}
+@media(max-width:490px){.module-table tr{column-gap:6px;padding:9px}.module-table input[type=number],.module-table input[type=text],.module-table select{font-size:12px;padding:8px 4px}}
+
   </style>
-  <link rel="stylesheet" href="./verbesserungen.css">
 </head>
 <body>
   <main class="wrap">
@@ -60,9 +104,9 @@
             <div class="field"><label for="baseCargo">Basis-Fracht pro Schiff</label><input id="baseCargo" type="number" min="0" step="1" value="0"></div>
             <div class="field"><label for="outbound">Hinflug (Minuten)</label><input id="outbound" type="number" min="0" step="0.1" value="5"></div>
             <div class="field"><label for="inbound">Rückflug (Minuten)</label><input id="inbound" type="number" min="0" step="0.1" value="5"></div>
-            <div class="field"><label for="unload">Entladen / Warten (Minuten)</label><input id="unload" type="number" min="0" step="0.1" value="0"></div>
+            
             <div class="field"><label for="interval">Minuten pro Abbauaktion</label><input id="interval" type="number" min="0.1" step="0.1" value="5"></div>
-            <div class="field"><label for="resourceRate">Ressourcen pro Minute / Extraktionslevel</label><input id="resourceRate" type="number" min="0.01" step="any" value="1000"></div>
+            <div class="field"><label for="efficiency">Abbaueffizienz (%)</label><input id="efficiency" type="number" min="0.01" max="1000" step="0.1" value="100"><small>100 % = 1.000 Ressourcen / Min. je Extraktionslevel</small></div>
             <div class="field"><label for="maxMining">Max. Abbauzeit pro Flug (0 = unbegrenzt)</label><input id="maxMining" type="number" min="0" step="any" value="0"></div>
           </div>
           <hr class="divider">
@@ -77,9 +121,9 @@
 
         <section class="panel">
           <h2>Berücksichtigte Module</h2>
-          <p class="smallprint">Häkchen setzen/entfernen und Werte jederzeit ändern. Zusätzliche Module können angelegt werden. Slots, Fracht und Extraktionslevel gelten <strong>je Modul</strong>.</p>
+          <p class="smallprint">Häkchen setzen/entfernen und Werte jederzeit ändern. Zusätzliche Module können angelegt werden. Slots, Fracht und Extraktionslevel gelten <strong>je Modul</strong>. Die <strong>maximale Anzahl</strong> gilt für die gesamte Flotte. Leer = unbegrenzt, 0 = nicht verfügbar.</p>
           <div class="scroller"><table class="module-table">
-            <thead><tr><th title="Berücksichtigen">An</th><th>Name</th><th>Slots</th><th>Fracht</th><th>Level</th><th>Rasse</th><th></th></tr></thead>
+            <thead><tr><th title="Berücksichtigen">An</th><th>Name</th><th>Slots</th><th>Fracht</th><th>Level</th><th>Max. Anzahl</th><th>Rasse</th><th></th></tr></thead>
             <tbody id="moduleRows"></tbody>
           </table></div>
           <div class="actions" style="margin-top:13px">
@@ -113,7 +157,7 @@
               <div class="metric"><div class="label">Ressourcen pro Flugrunde</div><div class="value" id="perCycle">–</div></div>
               <div class="metric"><div class="label">Gesamtdauer einer Flugrunde</div><div class="value" id="cycleTime">–</div></div>
             </div>
-            <div class="progress" title="Hinflug / Abbau / Rückflug und Entladen"><span id="barOut"></span><span id="barMining"></span><span id="barReturn"></span></div>
+            <div class="progress" title="Hinflug / Abbau / Rückflug"><span id="barOut"></span><span id="barMining"></span><span id="barReturn"></span></div>
             <div class="smallprint" id="cycleDescription"></div>
             <hr class="divider">
             <h2>Optimale Flottenzusammensetzung</h2>
@@ -129,7 +173,7 @@
         </section>
         <section class="panel">
           <h2>Berechnungsannahmen</h2>
-          <p class="smallprint">Exakte ganzzahlige Optimierung für die aktivierten Module: Zuerst werden alle erreichbaren optimalen Schiffsausrüstungen nach Extraktionslevel ermittelt; anschließend wird die beste Verteilung auf sämtliche Schiffe berechnet. Die Abbauzeit wird in ganzen Abbauaktionen optimiert. Keine Zufallssimulation oder Prozent-Schätzung.</p>
+          <p class="smallprint">Ganzzahlige Optimierung für aktivierte Module. Bei begrenztem Modulbestand wird jede maximale Anzahl über die gesamte Flotte eingehalten; bei zu großen Suchräumen erscheint eine Fehlermeldung statt eines ungeprüften Optimums. Die Abbauzeit wird in ganzen Abbauaktionen optimiert. Keine Zufallssimulation oder Prozent-Schätzung.</p>
           <p class="smallprint">Vorausgesetzt wird gemeinsamer Frachtraum der Flotte, additiver Frachtraum und additiver Extraktionslevel, gleichzeitiger Abbau und keine Rohstofferschöpfung. Übervolle letzte Abbauaktionen werden bei Erreichen der Kapazität abgeschnitten. Die ausgewiesenen Ressourcen/h sind der langfristige Durchschnitt bei wiederholten vollständigen Flugrunden, nicht zwingend die Entladungen innerhalb einer angefangenen Kalenderstunde.</p>
         </section>
       </div>
@@ -140,8 +184,8 @@
 'use strict';
 
 const defaults = {
-  ships:80, slots:32, reserved:4, baseCargo:0, outbound:5, inbound:5, unload:0,
-  interval:5, resourceRate:1000, maxMining:0, limitMode:'none', cargoLimit:10000000, race:'other', schemaVersion:2,
+  ships:80, slots:32, reserved:4, baseCargo:0, outbound:5, inbound:5,
+  interval:5, efficiency:100, maxMining:0, limitMode:'none', cargoLimit:10000000, race:'other', schemaVersion:2,
   modules:[
     {id:'cargo-s',name:'Fracht S',slots:1,cargo:17000,extraction:0,enabled:true,race:'all'},
     {id:'cargo-m',name:'Fracht M',slots:3,cargo:75000,extraction:0,enabled:true,race:'all'},
@@ -168,7 +212,7 @@ const number = (value,label,{min=0,integer=false,max=Number.MAX_SAFE_INTEGER}={}
     throw new Error(`${label}: ungültiger Wert${integer?' (ganze Zahl erforderlich)':''}.`);
   return n;
 };
-let modules=clone(defaults.modules);
+let modules=clone(defaults.modules).map(m=>({...m,maxCount:null}));
 let currentPlan=null;
 
 function renderModules(){
@@ -183,13 +227,14 @@ function renderModules(){
     const checkboxCell=document.createElement('td');
     const checkbox=document.createElement('input');checkbox.type='checkbox';checkbox.checked=module.enabled;checkbox.disabled=!isRaceAllowed||!fits;checkbox.title=tr.title||'Modul berücksichtigen';
     checkbox.addEventListener('change',()=>{module.enabled=checkbox.checked;dirty();});checkboxCell.append(checkbox);tr.append(checkboxCell);
-    for(const [key,type,min] of [['name','text',null],['slots','number',1],['cargo','number',0],['extraction','number',0]]){
-      const td=document.createElement('td');const input=document.createElement('input');input.type=type;input.value=module[key];
+    for(const [key,type,min] of [['name','text',null],['slots','number',1],['cargo','number',0],['extraction','number',0],['maxCount','number',0]]){
+      const td=document.createElement('td');const input=document.createElement('input');input.type=type;input.value=module[key]??'';
+      if(key==='maxCount')input.placeholder='∞';
       input.setAttribute('aria-label',`${key} für ${module.name}`);
       if(type==='number'){input.min=min;input.step='1'}
-      input.addEventListener('input',()=>{module[key]=input.value;dirty();});
+      input.addEventListener('input',()=>{module[key]=key==='maxCount'?(input.value===''?null:input.value):input.value;dirty();});
       if(key==='slots')input.addEventListener('change',renderModules);
-      td.append(input);tr.append(td);
+      td.dataset.label={name:'Name',slots:'Slots',cargo:'Fracht',extraction:'Level',maxCount:'Max. Anzahl'}[key];td.append(input);tr.append(td);
     }
     const raceCell=document.createElement('td'),raceSelect=document.createElement('select');
     for(const [value,label] of [['all','Alle'],['nemoryx','Nemoryx'],['xyrrh','Xyrrh']]){
@@ -198,7 +243,7 @@ function renderModules(){
     raceSelect.value=module.race||'all';
     raceSelect.setAttribute('aria-label',`Rassenbeschränkung für ${module.name}`);
     raceSelect.addEventListener('change',()=>{module.race=raceSelect.value;renderModules();dirty();});
-    raceCell.append(raceSelect);tr.append(raceCell);
+    raceCell.dataset.label='Rasse';raceCell.append(raceSelect);tr.append(raceCell);
     const deleteCell=document.createElement('td'),deleteButton=document.createElement('button');
     deleteButton.type='button';deleteButton.className='icon-btn';deleteButton.textContent='×';deleteButton.title=`${module.name} entfernen`;
     deleteButton.addEventListener('click',()=>{modules=modules.filter(m=>m!==module);renderModules();dirty();});
@@ -214,13 +259,16 @@ function inputs(){
     reserved:number(read('reserved'),'Reservierte Slots',{integer:true}),
     baseCargo:number(read('baseCargo'),'Basis-Fracht',{integer:true}),
     outbound:number(read('outbound'),'Hinflug'),inbound:number(read('inbound'),'Rückflug'),
-    unload:number(read('unload'),'Entladezeit'),interval:number(read('interval'),'Abbauintervall',{min:0.001}),
-    resourceRate:number(read('resourceRate'),'Ressourcen pro Minute',{min:0.001}),
+    interval:number(read('interval'),'Abbauintervall',{min:0.001}),
+    efficiency:number(read('efficiency'),'Abbaueffizienz',{min:0.01,max:1000}),
     maxMining:number(read('maxMining'),'Maximale Abbauzeit'),
     limitMode:document.querySelector('input[name=limitMode]:checked').value,
     cargoLimit:number(read('cargoLimit'),'Frachtlimit',{min:1,integer:true}),
-    modules:modules.filter(m=>m.enabled && ((m.race||'all')==='all'||m.race===race)).map((m,i)=>({id:m.id,name:String(m.name).trim(),slots:number(m.slots,`Slots von Modul ${i+1}`,{min:1,integer:true}),cargo:number(m.cargo,`Fracht von Modul ${i+1}`,{integer:true}),extraction:number(m.extraction,`Extraktionslevel von Modul ${i+1}`,{integer:true})}))
+    modules:modules.filter(m=>m.enabled && ((m.race||'all')==='all'||m.race===race)).map((m,i)=>({id:m.id,name:String(m.name).trim(),slots:number(m.slots,`Slots von Modul ${i+1}`,{min:1,integer:true}),cargo:number(m.cargo,`Fracht von Modul ${i+1}`,{integer:true}),extraction:number(m.extraction,`Extraktionslevel von Modul ${i+1}`,{integer:true}),maxCount:m.maxCount==null||m.maxCount===''?null:number(m.maxCount,`Maximale Anzahl von Modul ${i+1}`,{integer:true})}))
   };
+  result.resourceRate=1000*result.efficiency/100;
+  result.unload=0;
+  result.modules=result.modules.filter(m=>m.maxCount!==0);
   if(result.reserved >= result.slots)throw new Error('Die reservierten Slots müssen kleiner als die Slots pro Schiff sein.');
   if(result.modules.some(m=>!m.name || (m.cargo===0 && m.extraction===0)))throw new Error('Aktive Module benötigen einen Namen und mindestens einen Effekt (Fracht oder Extraktion).');
   if(!result.modules.some(m=>m.extraction>0))throw new Error('Bitte mindestens ein Extraktionsmodul aktivieren.');
@@ -229,7 +277,7 @@ function inputs(){
   return result;
 }
 function getRawSettings(){
-  const ids=['ships','slots','reserved','baseCargo','outbound','inbound','unload','interval','resourceRate','maxMining','cargoLimit'];
+  const ids=['ships','slots','reserved','baseCargo','outbound','inbound','interval','efficiency','maxMining','cargoLimit'];
   const data=Object.fromEntries(ids.map(id=>[id,$(id).value]));
   data.limitMode=document.querySelector('input[name=limitMode]:checked').value;
   data.race=$('race').value;
@@ -238,7 +286,8 @@ function getRawSettings(){
 }
 function setSettings(data){
   const src={...defaults,...data};
-  for(const id of ['ships','slots','reserved','baseCargo','outbound','inbound','unload','interval','resourceRate','maxMining','cargoLimit'])$(id).value=src[id];
+  if(data.efficiency==null && data.resourceRate!=null)src.efficiency=Number(data.resourceRate)/10;
+  for(const id of ['ships','slots','reserved','baseCargo','outbound','inbound','interval','efficiency','maxMining','cargoLimit'])$(id).value=src[id];
   $('race').value=['nemoryx','xyrrh'].includes(src.race)?src.race:'other';
   const mode=src.limitMode==='limit'?'limit':'none';
   document.querySelector(`input[name=limitMode][value="${mode}"]`).checked=true;
@@ -247,7 +296,7 @@ function setSettings(data){
   // Previous HTML versions had only five modules. Preserve edited and custom
   // settings, adding only the new modules on first migration to version 2.
   const incoming=Number(data.schemaVersion)>=2?src.modules:[...src.modules,...defaults.modules.filter(m=>!src.modules.some(existing=>existing.id===m.id))];
-  modules=incoming.map((m,i)=>({id:String(m.id||`custom-${i}`),name:String(m.name??''),slots:m.slots??1,cargo:m.cargo??0,extraction:m.extraction??0,enabled:Boolean(m.enabled),race:['nemoryx','xyrrh'].includes(m.race)?m.race:'all'}));
+  modules=incoming.map((m,i)=>({id:String(m.id||`custom-${i}`),name:String(m.name??''),slots:m.slots??1,cargo:m.cargo??0,extraction:m.extraction??0,enabled:Boolean(m.enabled),race:['nemoryx','xyrrh'].includes(m.race)?m.race:'all',maxCount:m.maxCount??null}));
   renderModules();dirty();
 }
 function dirty(){
@@ -322,7 +371,7 @@ function resultForTime(level,rawCargo,minutes,data){
   const usableCargo=data.limitMode==='limit'?Math.min(installedCargo,data.cargoLimit):installedCargo;
   const mined=level*data.resourceRate*minutes;
   const perTrip=Math.min(usableCargo,mined);
-  const travel=data.outbound+data.inbound+data.unload;
+  const travel=data.outbound+data.inbound;
   return {rate:perTrip*60/(travel+minutes),level,installedCargo,usableCargo,perTrip,minutes,cycle:travel+minutes};
 }
 function bestAtTime(fleet,data,minutes){
@@ -385,8 +434,8 @@ function renderResult(plan){
   const total=plan.cycle;
   $('barOut').style.flex=data.outbound/total;
   $('barMining').style.flex=plan.minutes/total;
-  $('barReturn').style.flex=(data.inbound+data.unload)/total;
-  set('cycleDescription',`${format.format(data.outbound)} Min. Hinflug + ${format.format(plan.minutes)} Min. Abbau (${integers.format(Math.round(plan.minutes/data.interval))} Aktionen) + ${format.format(data.inbound)} Min. Rückflug + ${format.format(data.unload)} Min. Entladen. ${plan.installedCargo!==plan.usableCargo?'Nutzbarer Frachtraum durch Limit: '+integers.format(plan.usableCargo)+'. ':''}Abbauleistung: ${integers.format(plan.level*data.resourceRate)} Ressourcen/Minute.`);
+  $('barReturn').style.flex=data.inbound/total;
+  set('cycleDescription',`${format.format(data.outbound)} Min. Hinflug + ${format.format(plan.minutes)} Min. Abbau (${integers.format(Math.round(plan.minutes/data.interval))} Aktionen) + ${format.format(data.inbound)} Min. Rückflug. ${plan.installedCargo!==plan.usableCargo?'Nutzbarer Frachtraum durch Limit: '+integers.format(plan.usableCargo)+'. ':''}Abbauleistung: ${integers.format(plan.level*data.resourceRate)} Ressourcen/Minute.`);
   const composition=$('composition');composition.replaceChildren();
   const totalModules=new Map();
   for(const item of plan.compositions){
@@ -425,6 +474,7 @@ function exportPlan(plan){
   const data=plan.data;
   const lines=[
     'Empire Universe 4 – Optimaler Flottenbauplan',
+    `Abbaueffizienz: ${format.format(data.efficiency??100)} % (Basis 1.000 Ressourcen/Min./Level)`,
     '===========================================',
     `Schiffe: ${data.ships} | Slots pro Schiff: ${data.slots} | Reserviert: ${data.reserved}`,
     `Ressourcen/h: ${integers.format(plan.rate)}`,
@@ -462,7 +512,7 @@ document.querySelectorAll('input:not(#importFile)').forEach(input=>{
   input.addEventListener('change',()=>{if(input.name==='limitMode')$('cargoLimit').disabled=document.querySelector('input[name=limitMode]:checked').value!=='limit';dirty();});
 });
 $('addModule').addEventListener('click',()=>{
-  modules.push({id:`new-${Date.now()}-${modules.length}`,name:'Neues Modul',slots:1,cargo:0,extraction:1,enabled:false,race:'all'});
+  modules.push({id:`new-${Date.now()}-${modules.length}`,name:'Neues Modul',slots:1,cargo:0,extraction:1,enabled:false,race:'all',maxCount:null});
   renderModules();dirty();
 });
 $('reset').addEventListener('click',()=>{try{localStorage.removeItem('eu4-fleet-optimizer-settings');}catch(_){}setSettings(clone(defaults));run();});
@@ -482,6 +532,299 @@ try{
 }catch(error){setSettings(clone(defaults));}
 run();
 </script>
-<script src="./verbesserungen.js"></script>
+<script>
+/* Exakte zusätzliche Bestandgrenzen je Modultyp über die gesamte Flotte. */
+'use strict';
+(() => {
+  const originalSolve = solve;
+  const originalBestAtTime = bestAtTime;
+  const MAX_LOCAL_STATES = 180000;
+  const MAX_FLEET_STATES = 120000;
+
+  function limitedModuleInfo(data) {
+    const free = data.slots - data.reserved;
+    const scarce = [];
+    for (let index = 0; index < data.modules.length; index++) {
+      const module = data.modules[index];
+      if (module.slots > free) continue;
+      if (module.maxCount == null) continue;
+      const cap = Number(module.maxCount);
+      if (!Number.isSafeInteger(cap) || cap < 0) throw new Error(`Ungültiger Modulbestand: ${module.name}.`);
+      if (cap < data.ships * Math.floor(free / module.slots)) scarce.push({index, cap});
+    }
+    let product = 1;
+    const byIndex = new Map();
+    for (const {index,cap} of scarce) {
+      const stride = product;
+      product *= cap + 1;
+      if (!Number.isSafeInteger(product) || product > 25000)
+        throw new Error('Zu viele unabhängige Modul-Bestandsgrenzen für die exakte Suche. Bitte weniger Modultypen gleichzeitig begrenzen.');
+      byIndex.set(index, {stride, radix:cap+1, cap});
+    }
+    return {scarce,byIndex};
+  }
+  function canAdd(code, addCode, scarce, byIndex) {
+    for (const {index} of scarce) {
+      const info = byIndex.get(index);
+      const a = Math.floor(code / info.stride) % info.radix;
+      const b = Math.floor(addCode / info.stride) % info.radix;
+      if (a + b > info.cap) return false;
+    }
+    return true;
+  }
+  function pareto(states, label) {
+    const byCode = new Map();
+    for (const state of states) {
+      let group=byCode.get(state.code);
+      if (!group) byCode.set(state.code, group=[]);
+      group.push(state);
+    }
+    const result=[];
+    for (const group of byCode.values()) {
+      group.sort((a,b)=>b.level-a.level || b.cargo-a.cargo);
+      let bestCargo=-1;
+      for(const state of group) {
+        if(state.cargo>bestCargo) {
+          result.push(state);
+          bestCargo=state.cargo;
+        }
+      }
+    }
+    const cap=label==='Schiffsmodul' ? MAX_LOCAL_STATES : MAX_FLEET_STATES;
+    if (result.length>cap)
+      throw new Error(`Die exakte Suche ist bei diesen Modulbeständen zu groß (${result.length.toLocaleString('de-DE')} ${label}-Zustände). Bitte weniger unabhängige Modulgrenzen oder eine kleinere Flotte verwenden.`);
+    return result;
+  }
+  function shipOptions(data, limited) {
+    const free=data.slots-data.reserved;
+    const bySlots=Array.from({length:free+1},()=>new Map());
+    const root={used:0, level:0,cargo:0,code:0,prev:null,moduleIndex:-1};
+    bySlots[0].set('0:0',root);
+    for(let used=0;used<=free;used++) {
+      const states=bySlots[used];
+      if(states.size>MAX_LOCAL_STATES) throw new Error('Zu viele mögliche Modulbestände für ein einzelnes Schiff.');
+      for(const node of states.values())for(let i=0;i<data.modules.length;i++){
+        const mod=data.modules[i];
+        const nextSlots=used+mod.slots;
+        if(nextSlots>free || mod.maxCount===0)continue;
+        const limitedData=limited.byIndex.get(i);
+        let newCode=node.code;
+        if(limitedData){
+          const current=Math.floor(node.code/limitedData.stride)%limitedData.radix;
+          if(current>=limitedData.cap)continue;
+          newCode+=limitedData.stride;
+        }
+        const nextLevel=node.level+mod.extraction;
+        const nextCargo=node.cargo+mod.cargo;
+        const key=newCode+':'+nextLevel;
+        const previous=bySlots[nextSlots].get(key);
+        if(!previous || nextCargo>previous.cargo)
+          bySlots[nextSlots].set(key,{used:nextSlots,level:nextLevel,cargo:nextCargo,code:newCode,prev:node,moduleIndex:i});
+      }
+    }
+    const maxima=new Map();
+    for(const slotMap of bySlots)for(const node of slotMap.values()){
+      const key=node.code+':'+node.level;
+      const existing=maxima.get(key);
+      if(!existing||node.cargo>existing.cargo)maxima.set(key,node);
+    }
+    const reduced=pareto([...maxima.values()],'Schiffsmodul');
+    if(reduced.length>8000) throw new Error('Zu viele mögliche Schiffsausrüstungen bei den gewählten Bestandsgrenzen.');
+    return reduced.map(node=>({node,code:node.code,level:node.level,cargo:node.cargo}));
+  }
+  function buildLimitedFleet(data, opts, limited) {
+    let states=[{level:0,cargo:0,code:0,prev:null,optionIndex:-1}];
+    for(let ship=0;ship<data.ships;ship++) {
+      const next=new Map();
+      let transitions=0;
+      for(const state of states) for(let i=0;i<opts.length;i++){
+        const option=opts[i];
+        if(!canAdd(state.code,option.code,limited.scarce,limited.byIndex))continue;
+        const code=state.code+option.code;
+        const level=state.level+option.level;
+        const cargo=state.cargo+option.cargo;
+        const key=code+':'+level;
+        const prev=next.get(key);
+        if(!prev || cargo>prev.cargo)
+          next.set(key,{code,level,cargo,prev:state,optionIndex:i});
+        if(++transitions>12000000)
+          throw new Error('Zu viele zulässige Kombinationen für eine exakte Berechnung. Weniger verschiedene Bestandsgrenzen verwenden.');
+      }
+      states=pareto([...next.values()],'Flotten');
+    }
+    return {limitedStates:states,shipOptions:opts};
+  }
+  function solveWithLimits(data, limited) {
+    const opts=shipOptions(data,limited);
+    const fleet=buildLimitedFleet(data,opts,limited);
+    const maxSteps=data.maxMining>0 ? Math.floor((data.maxMining+1e-9)/data.interval):Infinity;
+    let best=null,chosen=null;
+    for(const state of fleet.limitedStates){
+      if(state.level<=0)continue;
+      const cargo=state.cargo+data.ships*data.baseCargo;
+      const capacity=data.limitMode==='limit'?Math.min(cargo,data.cargoLimit):cargo;
+      if(capacity<=0)continue;
+      const fill=capacity/(state.level*data.resourceRate*data.interval);
+      const ticks=new Set([
+        Math.max(1,Math.min(maxSteps,Math.floor(fill))),
+        Math.max(1,Math.min(maxSteps,Math.ceil(fill)))
+      ]);
+      for(const tick of ticks){
+        if(tick>maxSteps)continue;
+        const result=resultForTime(state.level,state.cargo,tick*data.interval,data);
+        if(!best || result.rate>best.rate+1e-9 || (Math.abs(result.rate-best.rate)<1e-9 && result.cycle<best.cycle)){
+          best=result;chosen=state;
+        }
+      }
+    }
+    if(!best||best.rate<=0)throw new Error('Mit den verfügbaren Modulen ist kein Abbau und Transport möglich.');
+    const byOption=new Map();
+    for(let cursor=chosen;cursor?.prev;cursor=cursor.prev)
+      byOption.set(cursor.optionIndex,(byOption.get(cursor.optionIndex)||0)+1);
+    const compositions=[...byOption].map(([index,count])=>{
+      const opt=opts[index],counts=new Map();
+      for(let cursor=opt.node;cursor?.prev;cursor=cursor.prev)
+        counts.set(cursor.moduleIndex,(counts.get(cursor.moduleIndex)||0)+1);
+      return {
+        count,level:opt.level,cargo:opt.cargo,used:opt.node.used,
+        modules:[...counts].sort((a,b)=>a[0]-b[0]).map(([idx,quantity])=>({id:data.modules[idx].id,name:data.modules[idx].name,quantity}))
+      };
+    }).sort((a,b)=>b.level-a.level || b.cargo-a.cargo);
+    return {...best,compositions,fleet,data};
+  }
+  solve = function(data) {
+    const limited=limitedModuleInfo(data);
+    return limited.scarce.length ? solveWithLimits(data,limited) : originalSolve(data);
+  };
+  bestAtTime = function(fleet,data,minutes) {
+    if(!fleet.limitedStates)return originalBestAtTime(fleet,data,minutes);
+    let best=null;
+    for(const state of fleet.limitedStates){
+      if(state.level<=0)continue;
+      const value=resultForTime(state.level,state.cargo,minutes,data);
+      if(!best||value.rate>best.rate)best=value;
+    }
+    return best;
+  };
+  // Restore saved configurations after original inline initialization.
+  if(modules.some(m=>m.maxCount!=null && m.maxCount!=='')) run();
+})();
+
+</script>
+<script>
+/* Öffentliche Oberfläche und teilbare Konfigurationslinks. */
+'use strict';
+(() => {
+  const BASIS='https://kejith.github.io/empire-universe-tools/asteroiden-mining-flottenoptimierer/';
+  const fields=['ships','slots','reserved','baseCargo','outbound','inbound','interval','efficiency','maxMining','cargoLimit','limitMode','race'];
+  const fieldsOld=['ships','slots','reserved','baseCargo','outbound','inbound','unload','interval','resourceRate','maxMining','cargoLimit','limitMode','race'];
+  const modFields=['id','name','slots','cargo','extraction','enabled','race','maxCount'];
+  const modFieldsOld=modFields.slice(0,-1);
+  const fmt=value=>new Intl.NumberFormat('de-DE',{maximumFractionDigits:2}).format(value);
+  function tag(name,cls,text){const e=document.createElement(name);if(cls)e.className=cls;if(text!==undefined)e.textContent=text;return e;}
+
+  document.title='Asteroiden-Mining-Flottenoptimierer · Empire Universe Tools';
+  const header=document.querySelector('header');
+  header.prepend(tag('div','produktkennung','EMPIRE UNIVERSE TOOLS / MINING'));
+  header.querySelector('h1').replaceChildren(document.createTextNode('Asteroiden-Mining-'),tag('span',null,'Flottenoptimierer'));
+  header.querySelector('p').firstChild.textContent='Die beste Flottenzusammensetzung für maximalen Ressourcenertrag pro Stunde – unter Berücksichtigung deines tatsächlichen Modulbestands. ';
+  const nav=tag('nav','navigation');
+  const start=tag('a',null,'Alle Tools'); start.href='../';
+  const repo=tag('a',null,'GitHub ↗');repo.href='https://github.com/kejith/empire-universe-tools';repo.rel='noopener noreferrer';repo.target='_blank';
+  nav.append(start,repo);header.append(nav);
+
+  const controls=document.getElementById('exportSettings').parentElement;
+  const copy=tag('button','btn share','Konfiguration als Link kopieren');copy.type='button';
+  const native=tag('button','btn','Teilen …');native.type='button';native.hidden=!Boolean(navigator.share);
+  controls.append(copy,native);
+  const status=tag('p','help');status.id='shareStatus';controls.parentElement.append(status);
+  function encode(raw){
+    const payload={v:2,s:fields.map(key=>raw[key]),m:raw.modules.map(mod=>modFields.map(key=>mod[key]??null))};
+    const bytes=new TextEncoder().encode(JSON.stringify(payload));
+    let str='';for(const byte of bytes)str+=String.fromCharCode(byte);
+    return btoa(str).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+  }
+  function decode(code){
+    if(code.length>24000||!/^[A-Za-z0-9_-]+$/.test(code))throw new Error('Ungültiger oder zu langer Link.');
+    const data=new Uint8Array([...atob(code.replace(/-/g,'+').replace(/_/g,'/').padEnd(Math.ceil(code.length/4)*4,'='))].map(ch=>ch.charCodeAt(0)));
+    const value=JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(data));
+    const legacy=value.v===1;
+    const head=legacy?fieldsOld:fields;
+    const mods=legacy?modFieldsOld:modFields;
+    if(![1,2].includes(value.v)||!Array.isArray(value.s)||value.s.length!==head.length||!Array.isArray(value.m)||value.m.length>100)throw new Error('Unbekanntes Linkformat.');
+    const result=Object.fromEntries(head.map((key,i)=>[key,value.s[i]]));
+    result.modules=value.m.map(row=>{
+      if(!Array.isArray(row)||row.length!==mods.length)throw new Error('Ungültige Moduldaten.');
+      return Object.fromEntries(mods.map((key,i)=>[key,row[i]]));
+    });
+    result.schemaVersion=2;
+    if(legacy)result.efficiency=Number(result.resourceRate)/10;
+    return result;
+  }
+  function shareUrl(){
+    if(location.protocol==='file:')throw new Error('Teilbare Links funktionieren erst nach Veröffentlichung auf GitHub Pages. Alternativ JSON exportieren.');
+    inputs();
+    const url=new URL(BASIS);
+    url.hash='konfiguration='+encode(getRawSettings());
+    if(url.href.length>16000)throw new Error('Konfiguration zu groß für einen Link. Bitte als JSON exportieren.');
+    return url.href;
+  }
+  copy.addEventListener('click',async()=>{
+    try{await navigator.clipboard.writeText(shareUrl());status.textContent='Link kopiert. Deine Module und Bestandsgrenzen sind im Link gespeichert.';}
+    catch(error){status.textContent=error.message;}
+  });
+  native.addEventListener('click',async()=>{
+    try{await navigator.share({title:document.title,url:shareUrl()});}
+    catch(error){if(error.name!=='AbortError')status.textContent=error.message;}
+  });
+  const originalDirty=dirty;
+  dirty=function(){originalDirty();if(!window.__ladeFreigabe&&location.hash.startsWith('#konfiguration='))history.replaceState(null,'',location.pathname+location.search);};
+
+  const explanation=tag('section','erklaerung');explanation.append(tag('h2',null,'Warum diese Flotte?'));
+  const details=tag('div','warum-inhalt');explanation.append(details);
+  document.getElementById('cycleDescription').after(explanation);
+  const alternatives=document.querySelector('#alternatives').parentElement.parentElement;
+  alternatives.querySelector('thead tr').append(tag('th',null,'Vergleich'));
+  const originalRender=renderResult;
+  renderResult=function(plan){
+    originalRender(plan);
+    const d=plan.data, mined=plan.level*d.resourceRate*plan.minutes;
+    const items=[
+      ['Abbaueffizienz',`1.000 Ressourcen pro Minute und Extraktionslevel × ${fmt(d.efficiency??100)} % = ${fmt(d.resourceRate)} Ressourcen/min/Level.`],
+      ['Abbauleistung',`${fmt(plan.level)} Extraktionsstärke ergibt ${fmt(plan.level*d.resourceRate)} Ressourcen pro Minute.`],
+      ['Frachtauslastung',`${fmt(mined)} Ressourcen gefördert in ${fmt(plan.minutes)} Minuten; davon ${fmt(plan.perTrip)} transportierbar (${fmt(plan.usableCargo>0?100*plan.perTrip/plan.usableCargo:0)} % des Frachtraums).`],
+      ['Flugzyklus',`${fmt(d.outbound+d.inbound)} Minuten Hin- und Rückflug je Runde, plus ${fmt(plan.minutes)} Minuten Abbau. Jede zusätzliche Abbauaktion dauert ${fmt(d.interval)} Minuten.`]
+    ];
+    const limited=d.modules.filter(m=>m.maxCount!=null);
+    if(limited.length){
+      const used=new Map();
+      for(const ship of plan.compositions)for(const m of ship.modules){
+        const entry=d.modules.find(mod=>mod.id===m.id||mod.name===m.name);
+        if(entry)used.set(entry.id,(used.get(entry.id)||0)+m.quantity*ship.count);
+      }
+      items.push(['Modulbestand',limited.map(m=>`${m.name}: ${fmt(used.get(m.id)||0)} von ${fmt(m.maxCount)}`).join(' · ')]);
+    }
+    if(d.limitMode==='limit')items.push(['Frachtlimit',`Das Frachtlimit von ${fmt(d.cargoLimit)} gilt einmal für die gesamte Flotte.`]);
+    details.replaceChildren();
+    for(const [title,text] of items){const b=tag('div','begruendung');b.append(tag('strong',null,title),tag('p',null,text));details.append(b);}
+    for(const tr of document.querySelectorAll('#alternatives tr')){
+      const num=Number(tr.cells[2].textContent.replace(/\./g,'').replace(',','.'));
+      const cell=tag('td');const bar=tag('div','vergleichsbalken');const fill=tag('span');
+      fill.style.width=Math.min(100,100*num/plan.rate)+'%';bar.append(fill);cell.append(bar);tr.append(cell);
+    }
+  };
+  const shared=new URLSearchParams(location.hash.slice(1)).get('konfiguration');
+  if(shared){
+    try{window.__ladeFreigabe=true;setSettings(decode(shared));inputs();status.textContent='Geteilte Konfiguration geladen.';}
+    catch(error){status.textContent='Freigabelink fehlerhaft: '+error.message;setSettings(clone(defaults));}
+    finally{window.__ladeFreigabe=false;}
+  }
+  const footer=document.querySelector('.footer');
+  footer.textContent='Unabhängiges Community-Projekt · Alle Berechnungen laufen im Browser. Angaben und Spielmechaniken bitte selbst prüfen. · ';
+  const wiki=tag('a',null,'Empire-Universe-Wiki');wiki.href='https://www.empire-universe.com/wiki#module';footer.append(wiki);
+  run();
+})();
+
+</script>
 </body>
 </html>
