@@ -21,4 +21,4 @@ jobs:
       - name: JavaScript-Syntax prüfen
         run: node --check asteroiden-mining-flottenoptimierer/verbesserungen.js
       - name: Berechnung mit Referenzfällen prüfen
-        run: node --test tests/optimizer.test.mjs
+        run: node --test tests/*.test.mjs
