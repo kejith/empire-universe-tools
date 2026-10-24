@@ -88,3 +88,21 @@ test('Zurücksetzen ist sichtbar, bestätigt und entfernt geteilte Konfiguration
   assert.match(html,/history\.replaceState\(null,'',location\.pathname\+location\.search\)/);
   assert.match(html,/setSettings\(clone\(defaults\)\);/);
 });
+
+test('120.648 Flotten-Zustände überschreiten das neue Limit nicht',()=>{
+  const match=html.match(/const MAX_FLEET_STATES = (\d+);/);
+  assert.ok(match,'Obergrenze für Flotten-Zustände erwartet');
+  const maximum=Number(match[1]);
+  assert.equal(maximum,500000);
+  assert.ok(maximum>120648);
+  assert.match(html,/if\(\+\+transitions>60000000\)/);
+  const source=html.match(/function pareto\(states, label\) \{([\s\S]*?)\n  \}\n  function shipOptions/);
+  assert.ok(source,'Pareto-Filter erwartet');
+  const run=vm.runInNewContext(
+    'const MAX_LOCAL_STATES=180000; const MAX_FLEET_STATES='+maximum+
+    '; function pareto(states,label){'+source[1]+'\n}\npareto',
+    {Map,Error,Number}
+  );
+  const states=Array.from({length:120648},(_,index)=>({code:index,level:1,cargo:1}));
+  assert.equal(run(states,'Flotten').length,120648);
+});
