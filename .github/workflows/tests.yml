@@ -20,5 +20,9 @@ jobs:
           node-version: '22'
       - name: JavaScript-Syntax prüfen
         run: node --check asteroiden-mining-flottenoptimierer/verbesserungen.js
+      - name: Datenbank-JavaScript prüfen
+        run: |
+          node --check datenbank/app.js
+          node --check asteroiden-mining-flottenoptimierer/datenbank-anbindung.js
       - name: Berechnung mit Referenzfällen prüfen
         run: node --test tests/*.test.mjs
