@@ -1,54 +1,64 @@
 # Empire Universe Tools
 
-Kleine, unabhängige Helfer für **Empire Universe 4**.
+Kostenlose, deutschsprachige Community-Helfer für [Empire Universe 4](https://www.empire-universe.com). Statische Webseiten ohne Konto oder eigenes Backend.
 
-## Asteroiden-Mining-Flottenoptimierer
+## Anwendungen
 
-[Online öffnen](https://kejith.github.io/empire-universe-tools/asteroiden-mining-flottenoptimierer/)
+| Anwendung | Zweck |
+| --- | --- |
+| [**Asteroiden-Mining-Flottenoptimierer**](https://kejith.github.io/empire-universe-tools/asteroiden-mining-flottenoptimierer/) | Beste Modulausrüstung, Abbauzeit und langfristigen Ertrag pro Stunde berechnen |
+| [**Empire-Universe-Datenbank**](https://kejith.github.io/empire-universe-tools/datenbank/) | Schiffe, Module, Forschung, Gebäude und Konstanten aus dem Referenzexport durchsuchen |
 
-Berechnet die maximale langfristige Ressourcenausbeute für eine Flotte unter Berücksichtigung von Frachtmodulen, Abbaumodulen und Flugzeiten.
+## Datenbank
 
-### Funktionen
+Unter `datenbank/` liegen eine vollständig statische Oberfläche und die Referenzdatei `referenzdaten.json`.
 
-- Schiffe, Slots pro Schiff und reservierte Slots frei einstellbar.
-- Hin- und Rückflug, Dauer einer Abbauaktion und optional maximale Abbaudauer.
-- Optionales Frachtlimit für die **gesamte Flotte**.
-- **Abbaueffizienz in Prozent:** 100 % entsprechen 1.000 Ressourcen pro Minute je Extraktionslevel, 80 % entsprechen 800.
-- Aktivierbare Module, frei editierbare Werte, Rassenbeschränkungen und **maximale Stückzahl je Modultyp über alle Schiffe**. Leeres Anzahlfeld bedeutet unbegrenzt; 0 bedeutet nicht verfügbar.
-- Kein horizontales Scrollen in der Modulliste – auch auf Mobilgeräten.
-- Optimale Modulverteilung, Abbauzeit, Ausbeute pro Stunde und exportierbarer Bauplan.
-- Lokale Speicherung, JSON-Import/-Export und teilbare Konfigurationslinks.
+**Exportstand:** 25. Oktober 2026 (UTC: 24.10.2026, 23:40:53), Quelle: offizielle öffentliche Referenzendpunkte `/api/v1/reference/*`.
 
-### Berechnungsmodell
+| Katalog | Umfang |
+| --- | ---: |
+| Module | 144 |
+| Schiffsklassen | 30 |
+| Forschungseinträge | 210 |
+| Gebäudetypen | 11 |
+| Konstanten | Kampf, Konstruktion, Mining |
+
+Die JSON-Datei enthält die **Originalwerte und Originalnamen** des Exports. Viele Namen/Beschreibungen sind französisch; die Oberfläche ist deutsch. Die Datenbank zeigt Effekte, Slots, Kosten, Voraussetzungen, sortier- und filterbare Suchergebnisse sowie ursprüngliche Datensätze. Verlinkte Module lassen sich direkt im Flottenoptimierer übernehmen.
+
+Das Datenarchiv ist ein **Snapshot**, keine Live-Verbindung zum Spiel. Werte und Freischaltungen können sich ändern. Der Export enthält keine eigenen Spielerfreischaltungen und keine Modulbestände.
+
+### Flottenoptimierer
+
+Der Optimierer verwendet weiterhin als Spielmodell:
+
+- Gemeinsamen Frachtraum für die gesamte Flotte und additive Abbaustärke.
+- Frei einstellbare Flottengröße, Slots, reservierte Slots und Flugzeiten.
+- Diskrete Abbauintervalle (standardmäßig 5 Minuten).
+- **1.000 Ressourcen/Minute je Extraktionslevel × eingestellte Abbaueffizienz**.
+- Optionale Flotten-Frachtgrenze.
+- Gesamtbestand je Modultyp (leer = unbegrenzt).
+- Exakte ganzzahlige Suche, begrenzt durch Schutzlimits für Rechenaufwand.
+
+**Neu:** Über „Mining-Module aus Datenbank übernehmen“ können offizielle Slot-, Fracht- und Extraktionswerte geladen werden. Dabei bleiben bestehende Modulbestände (Max. Anzahl) und Aktivierungszustände erhalten. Noch nicht bekannte Module werden **deaktiviert** hinzugefügt, bis sie ausdrücklich ausgewählt werden. Die optionale Schiffsauswahl übernimmt die Slotzahl des gewählten Typs.
+
+Es wird **nicht automatisch überprüft**, ob ein Nutzer ein Modul erforscht hat. Forschungsvoraussetzungen stehen in der Datenbank; verfügbare Module bitte entsprechend aktivieren. Mining-Optimierer, Stationsmodule und andere Spielmechaniken außerhalb des verwendeten Extraktions-/Frachtmodells werden nicht ungeprüft als Boni eingerechnet.
 
 ```text
-Ressourcen/min pro Extraktionslevel = 1000 × Abbaueffizienz (%) / 100
-
-Ressourcen pro Runde = min(
-  nutzbare Fracht der gesamten Flotte,
-  Extraktionslevel der gesamten Flotte × Ressourcen/min/Level × Abbauzeit
-)
-
-Ressourcen pro Stunde = Ressourcen pro Runde × 60 /
-  (Hinflug + Abbauzeit + Rückflug)
+Ressourcen pro Stunde =
+  min(nutzbare Flottenfracht, Extraktionslevel × (1.000 × Abbaueffizienz / 100) × Abbauzeit)
+  × 60 / (Hinflug + Abbauzeit + Rückflug)
 ```
 
-Die Abbauzeit wird in ganzen Abbauaktionen betrachtet. Module müssen je Schiff in die verfügbaren Slots passen, begrenzte Bestände gelten **global** für die ganze Flotte. Bei zu großen exakten Suchräumen bricht die Berechnung mit einer Fehlermeldung ab, statt eine heuristische Lösung als nachweislich optimal auszugeben.
+Die Abbauzeit wird in zulässigen Intervallen optimiert. Angezeigte Ergebnisse sind langfristige Durchschnittswerte vollständiger Runden.
 
-Die Werte gelten für das gewählte Modell: gemeinsamer Frachtraum, additive Modulwerte, gleichzeitiger Abbau, keine Rohstofferschöpfung und keine zusätzliche Entladezeit. Sie sind keine Garantie für alle Spielmechaniken.
+## Entwicklung
 
-### Lokal ausführen
+- `index.html` — Übersicht.
+- `datenbank/` — Referenzdatenbank, Oberfläche und Snapshot.
+- `asteroiden-mining-flottenoptimierer/` — Optimierer und Datenbank-Anbindung.
+- `tests/` — Node.js-Regressionstests.
+- `.github/workflows/pages.yml` — GitHub-Pages-Bereitstellung.
 
-`asteroiden-mining-flottenoptimierer/index.html` im Browser öffnen. Kein Build-Schritt, keine externen Abhängigkeiten und kein Backend erforderlich.
+Tests lokal mit `node --test tests/*.test.mjs` ausführen. Die Webseiten benötigen keine Build-Tools. Die Referenzdatei wird lokal über den Webserver geladen, daher zum lokalen Testen statt `file://` einen HTTP-Server verwenden, etwa `python3 -m http.server 8000`.
 
-### Tests
-
-```bash
-node --test tests/*.test.mjs
-```
-
-GitHub Pages wird über `.github/workflows/pages.yml` bereitgestellt.
-
----
-
-Unabhängiges Community-Projekt ohne offizielle Verbindung zu Empire Universe.
+*Unabhängiges Community-Projekt ohne offizielle Verbindung zum Spielbetreiber.*
