@@ -555,7 +555,7 @@ run();
   const originalSolve = solve;
   const originalBestAtTime = bestAtTime;
   const MAX_LOCAL_STATES = 180000;
-  const MAX_FLEET_STATES = 120000;
+  const MAX_FLEET_STATES = 500000;
 
   function limitedModuleInfo(data) {
     const free = data.slots - data.reserved;
@@ -663,7 +663,7 @@ run();
         const prev=next.get(key);
         if(!prev || cargo>prev.cargo)
           next.set(key,{code,level,cargo,prev:state,optionIndex:i});
-        if(++transitions>12000000)
+        if(++transitions>60000000)
           throw new Error('Zu viele zulässige Kombinationen für eine exakte Berechnung. Weniger verschiedene Bestandsgrenzen verwenden.');
       }
       states=pareto([...next.values()],'Flotten');
