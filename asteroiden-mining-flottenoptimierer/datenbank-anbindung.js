@@ -96,7 +96,7 @@
       const old=known.get(oneId);
       const item=toOptimizerModule(oneId,source[oneId],old,true);
       if(!item)throw new Error('Dieses Modul besitzt keine Fracht- oder Asteroidenabbauwerte.');
-      if(!old)item.enabled=true;
+      item.enabled=true; // Direkter Datenbank-Link aktiviert das gewählte Modul ausdrücklich.
       result.push(item);inserted=old?0:1;updated=old?1:0;
     }else{
       const added=new Set();
