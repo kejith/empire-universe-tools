@@ -48,6 +48,8 @@ a{color:#7de3f3;text-decoration-thickness:1px;text-underline-offset:3px}
 .metric.feature .value{font-size:clamp(23px,2.8vw,31px)}
 .composition .ship{border-left:3px solid #40aeca}
 .share{background:#0a5f73;border-color:#247f96}
+  .btn-reset{border-color:#8a4a58;color:#ffcbd4}
+  .btn-reset:hover{background:#46212b;border-color:#da7287}
 #shareStatus:empty{display:none}
 #totalModules{display:flex;gap:6px;flex-wrap:wrap}
 .erklaerung{margin-top:18px;padding:18px;background:#0d2330;border:1px solid #28586a;border-radius:10px}
@@ -128,7 +130,6 @@ a{color:#7de3f3;text-decoration-thickness:1px;text-underline-offset:3px}
           </table></div>
           <div class="actions" style="margin-top:13px">
             <button class="btn" type="button" id="addModule">+ Modul hinzufügen</button>
-            <button class="btn" type="button" id="reset">Standardwerte</button>
           </div>
           <p class="help">Enthält alle 13 aus deinen Screenshots bekannten Module. Rassenexklusive Module werden nur für die gewählte Rasse berücksichtigt. Module, die nicht in die freien Slots passen (z. B. Jumbo mit 40/45 Slots bei 28 freien Slots), werden automatisch ausgeschlossen. <strong>Hinweis:</strong> Beim Nemoryx-Extraktor steht in der Beschreibung „9“, der grüne Modifier zeigt aber <strong>+14</strong> – hier ist +14 eingetragen.</p>
         </section>
@@ -137,9 +138,10 @@ a{color:#7de3f3;text-decoration-thickness:1px;text-underline-offset:3px}
           <div class="actions">
             <button class="btn" id="exportSettings" type="button">Einstellungen als JSON</button>
             <button class="btn" id="importSettings" type="button">JSON laden</button>
+            <button class="btn btn-reset" type="button" id="reset" title="Alle Einstellungen und Module auf die Standardwerte zurücksetzen">Einstellungen zurücksetzen</button>
             <input type="file" id="importFile" accept="application/json,.json" class="hidden">
           </div>
-          <p class="help">Die aktuellen Einstellungen werden zusätzlich lokal in diesem Browser gespeichert. Keine Daten werden an einen Server übertragen.</p>
+          <p class="help">Die aktuellen Einstellungen werden zusätzlich lokal in diesem Browser gespeichert. Keine Daten werden an einen Server übertragen. „Einstellungen zurücksetzen“ stellt auch deine Modulauswahl und selbst hinzugefügte Module auf den Ausgangszustand zurück.</p>
         </section>
       </div>
 
@@ -515,7 +517,21 @@ $('addModule').addEventListener('click',()=>{
   modules.push({id:`new-${Date.now()}-${modules.length}`,name:'Neues Modul',slots:1,cargo:0,extraction:1,enabled:false,race:'all',maxCount:null});
   renderModules();dirty();
 });
-$('reset').addEventListener('click',()=>{try{localStorage.removeItem('eu4-fleet-optimizer-settings');}catch(_){}setSettings(clone(defaults));run();});
+$('reset').addEventListener('click',()=>{
+  if(!window.confirm('Alle Einstellungen, Moduländerungen und selbst hinzugefügten Module auf die Standardwerte zurücksetzen?'))return;
+  // Den geteilten Konfigurationslink entfernen, damit ein Neuladen nicht
+  // wieder dieselben benutzerdefinierten Einstellungen aktiviert.
+  if(new URLSearchParams(location.hash.slice(1)).has('konfiguration')){
+    history.replaceState(null,'',location.pathname+location.search);
+  }
+  setSettings(clone(defaults));
+  // setSettings() speichert standardmäßig den geänderten Zustand; der vorherige
+  // benutzerdefinierte Zustand wird durch die Standardwerte überschrieben.
+  $('importFile').value='';
+  const shareStatus=$('shareStatus');
+  if(shareStatus)shareStatus.textContent='';
+  run();
+});
 $('calculate').addEventListener('click',run);
 $('downloadPlan').addEventListener('click',()=>{if(currentPlan)exportPlan(currentPlan);});
 $('exportSettings').addEventListener('click',()=>download('EU4-Flotteneinstellungen.json',JSON.stringify(getRawSettings(),null,2),'application/json;charset=utf-8'));
