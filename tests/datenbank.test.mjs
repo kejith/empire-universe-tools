@@ -31,7 +31,7 @@ test('Mining-Referenzdaten enthalten neue Module und Originalwerte',()=>{
 test('Datenbank zeigt die Quelle und behandelt Originaltext als Text',()=>{
   assert.match(app,/textContent/);
   assert.doesNotMatch(app,/innerHTML\s*=/);
-  assert.match(app,/data\.catalogs\.modules\.modules/);
+  assert.match(app,/data\.catalogs\[type\]/);
   assert.match(app,/prerequisiteText/);
   assert.match(app,/referenzdaten\.json/);
 });
