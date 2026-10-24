@@ -254,7 +254,7 @@
       }
       $('datasetStatus').textContent='Referenzexport geladen';
       $('updated').textContent='Stand: '+new Date(data.exportedAt).toLocaleString('de-DE',{dateStyle:'medium',timeStyle:'short',timeZone:'Europe/Berlin'});
-      const q=initialState();setCatalog(catalog);$('search').value=q;show();
+      const q=initialState();const deepLinkId=selected;setCatalog(catalog);selected=deepLinkId;$('search').value=q;show();
     })
     .catch(error=>{
       $('datasetStatus').textContent='Daten konnten nicht geladen werden: '+error.message;
