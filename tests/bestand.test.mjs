@@ -79,3 +79,12 @@ test('keine seitlich fixierte Modul-Tabelle, kein Schnellstart, kein Entladefeld
   assert.match(html,/id="efficiency"/);
   assert.match(html,/maxCount/);
 });
+
+test('Zurücksetzen ist sichtbar, bestätigt und entfernt geteilte Konfigurationen',()=>{
+  const settingsPanel=html.match(/<h2>Einstellungen speichern<\/h2>([\s\S]*?)<\/section>/)?.[1];
+  assert.ok(settingsPanel?.includes('id="reset"'), 'Reset-Button in den Einstellungen erwartet');
+  assert.match(settingsPanel,/Einstellungen zurücksetzen/);
+  assert.match(html,/window\.confirm\('Alle Einstellungen/);
+  assert.match(html,/history\.replaceState\(null,'',location\.pathname\+location\.search\)/);
+  assert.match(html,/setSettings\(clone\(defaults\)\);/);
+});
