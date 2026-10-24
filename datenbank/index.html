@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Empire Universe Datenbank – Schiffe, Module, Forschung und Gebäude</title>
+  <meta name="description" content="Durchsuchbare Empire Universe 4 Spieldatenbank mit Schiffen, Modulen, Gebäuden, Forschung, Kosten, Voraussetzungen und Mining-Daten.">
+  <meta property="og:title" content="Empire Universe 4 – Datenbank">
+  <meta property="og:description" content="144 Module, 30 Schiffe, Gebäude, Forschung und Spielkonstanten durchsuchen.">
+  <meta property="og:locale" content="de_DE">
+  <link rel="canonical" href="https://kejith.github.io/empire-universe-tools/datenbank/">
+  <link rel="stylesheet" href="./style.css">
+  <script defer src="./app.js"></script>
+</head>
+<body>
+  <a class="skip" href="#results">Zu den Ergebnissen springen</a>
+  <div class="wrap">
+    <header class="mast">
+      <div class="eyebrow">EMPIRE UNIVERSE TOOLS / REFERENZDATEN</div>
+      <nav class="topnav" aria-label="Werkzeuge">
+        <a href="../">Alle Tools</a>
+        <a href="../asteroiden-mining-flottenoptimierer/">Flottenoptimierer</a>
+        <a href="https://github.com/kejith/empire-universe-tools" target="_blank" rel="noopener noreferrer">GitHub</a>
+      </nav>
+      <h1>Empire Universe <span>Datenbank</span></h1>
+      <p>Alle Daten aus deinem Referenzexport an einem Ort: Schiffe, Module, Forschung, Gebäude und Spielkonstanten. Suche, vergleiche und übernimm Mining-Module in deinen Flottenoptimierer.</p>
+      <div class="metadata"><span id="datasetStatus" role="status">Lade Referenzdaten …</span><span id="updated">Stand: –</span><a href="./referenzdaten.json" download>Rohdaten herunterladen</a></div>
+    </header>
+
+    <section class="toolbar" aria-label="Suchoptionen">
+      <div class="category-tabs" role="group" aria-label="Datenkatalog">
+        <button type="button" class="tab active" data-catalog="modules">Module <span id="count-modules"></span></button>
+        <button type="button" class="tab" data-catalog="ships">Schiffe <span id="count-ships"></span></button>
+        <button type="button" class="tab" data-catalog="research">Forschung <span id="count-research"></span></button>
+        <button type="button" class="tab" data-catalog="buildings">Gebäude <span id="count-buildings"></span></button>
+        <button type="button" class="tab" data-catalog="constants">Konstanten</button>
+      </div>
+      <div class="filterrow">
+        <div class="field search"><label for="search">Suche</label><input id="search" type="search" placeholder="Name, ID, Beschreibung, Voraussetzungen …" autocomplete="off"></div>
+        <div class="field"><label for="kind">Kategorie</label><select id="kind"><option value="">Alle Kategorien</option></select></div>
+        <div class="field"><label for="order">Sortierung</label><select id="order"><option value="name">Name A–Z</option><option value="slots">Slots aufsteigend</option><option value="power">Extraktion absteigend</option><option value="cargo">Fracht absteigend</option></select></div>
+        <div class="field mining"><label for="miningOnly">Mining-Relevanz</label><label class="check"><input id="miningOnly" type="checkbox"> Nur Abbau/Fracht</label></div>
+      </div>
+      <div class="result-info"><span id="summary">–</span><button id="clearFilters" type="button" class="text-btn">Filter zurücksetzen</button></div>
+    </section>
+
+    <main class="columns">
+      <section class="results" aria-label="Datensätze">
+        <div id="results" class="cards" aria-live="polite"></div>
+        <p id="empty" class="empty" hidden>Keine passenden Datensätze gefunden.</p>
+      </section>
+      <aside class="details" id="details" aria-label="Details zum Datensatz">
+        <div class="placeholder"><h2>Datensatz auswählen</h2><p>Wähle einen Eintrag, um Werte, Baukosten, Voraussetzungen und Rohdaten zu sehen.</p></div>
+      </aside>
+    </main>
+    <footer>Quelle: <a href="https://www.empire-universe.com/" target="_blank" rel="noopener noreferrer">Empire Universe 4</a> · Gespeicherter Referenzexport · Namen und Beschreibungen können aus den Originaldaten französisch sein · Unabhängiges Community-Projekt</footer>
+  </div>
+</body>
+</html>
