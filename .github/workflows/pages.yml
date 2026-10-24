@@ -30,11 +30,13 @@ jobs:
 
       - name: Nur öffentliche HTML-, CSS- und JavaScript-Dateien bereitstellen
         run: |
-          mkdir -p _site/asteroiden-mining-flottenoptimierer
+          mkdir -p _site/asteroiden-mining-flottenoptimierer _site/datenbank
           cp index.html _site/
           cp asteroiden-mining-flottenoptimierer/index.html _site/asteroiden-mining-flottenoptimierer/
           cp asteroiden-mining-flottenoptimierer/verbesserungen.css _site/asteroiden-mining-flottenoptimierer/
           cp asteroiden-mining-flottenoptimierer/verbesserungen.js _site/asteroiden-mining-flottenoptimierer/
+          cp asteroiden-mining-flottenoptimierer/datenbank-anbindung.js _site/asteroiden-mining-flottenoptimierer/
+          cp datenbank/index.html datenbank/app.js datenbank/style.css datenbank/referenzdaten.json _site/datenbank/
 
       - name: Webseite packen
         uses: actions/upload-pages-artifact@v4
