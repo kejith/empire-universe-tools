@@ -89,6 +89,11 @@ a{color:#7de3f3;text-decoration-thickness:1px;text-underline-offset:3px}
 
   
 /* PA-basierte Flottengröße und zweigeteilte Modulauswahl */
+.searchmode-field{margin:0 0 12px}.searchmode-field select{max-width:100%;width:100%;background:#10283b;color:#e9f5ff;border:1px solid #3b637b;border-radius:9px;padding:10px 12px}
+.searchmode-field small{display:block;margin-top:6px;color:#abc5d8;font-size:12px;line-height:1.5}
+.module-efficiency{display:block;font-size:11px;color:#84e2c4;margin-top:3px;font-weight:650;line-height:1.3}
+.module-table td:nth-child(2){gap:0}
+
 #ships{display:flex;align-items:center;justify-content:flex-start;min-height:41px;padding:8px 11px;border:1px solid #2e5062;border-radius:9px;background:#123241;color:#9af4e3;font-size:20px;font-weight:800;font-variant-numeric:tabular-nums}
 #shipId{max-width:100%}
 #shipInfo,#paInfo{display:block;line-height:1.4;margin-top:4px;color:#94b5c8;font-size:11px}
@@ -167,7 +172,14 @@ a{color:#7de3f3;text-decoration-thickness:1px;text-underline-offset:3px}
 
       <div class="stack">
         <section class="panel">
-          <div class="actions"><button class="btn primary" id="calculate" type="button">Beste Flotte berechnen</button><button class="btn" id="cancelCalculation" type="button" hidden>Berechnung abbrechen</button><button class="btn" id="downloadPlan" type="button" disabled>Bauplan als TXT</button></div>
+          <div class="field searchmode-field"><label for="searchMode">Suchmethode</label>
+            <select id="searchMode">
+              <option value="fast">Schnell – beste Effizienz + lokale Verbesserungen</option>
+              <option value="exact">Exakt – vollständige Suche (deutlich langsamer)</option>
+            </select>
+            <small>Die schnelle Methode sortiert Module nach Fracht/Slot bzw. Extraktionslevel/Slot, probiert verschiedene Verteilungen und verbessert den Bauplan. Sie garantiert kein mathematisches Optimum.</small>
+          </div>
+          <div class="actions"><button class="btn primary" id="calculate" type="button">Flotte optimieren</button><button class="btn" id="cancelCalculation" type="button" hidden>Berechnung abbrechen</button><button class="btn" id="downloadPlan" type="button" disabled>Bauplan als TXT</button></div>
           <div id="status" class="status" role="status" aria-live="polite">Bereit zur Berechnung.</div><progress id="calculationProgress" max="100" value="0" aria-label="Fortschritt der Flottenoptimierung" hidden></progress>
           <div id="empty" class="empty">Nach der Berechnung erscheinen hier optimaler Modul-Mix, Abbauzeit und Ressourcen pro Stunde.</div>
           <div id="results" class="hidden">
@@ -258,6 +270,16 @@ function renderModules(){
     const isRaceAllowed=module.race==='all'||module.race===race;
     const fits=Number(module.slots)<=freeSlots;
     if(!isRaceAllowed||!fits){tr.classList.add('module-incompatible');tr.title=!isRaceAllowed?'Nicht für die ausgewählte Rasse verfügbar.':'Zu viele Slots für dieses Schiff.';}
+    const efficiencyNote=document.createElement('small');
+    efficiencyNote.className='module-efficiency';
+    const updateEfficiency=()=>{
+      const slots=Number(module.slots);
+      const isMining=Number(module.extraction)>0;
+      const yieldPerSlot=isMining?Number(module.extraction):Number(module.cargo);
+      const label=isMining?'Extraktionslevel/Slot':'Fracht/Slot';
+      efficiencyNote.textContent='Effizienz: '+(slots>0&&Number.isFinite(yieldPerSlot)?format.format(yieldPerSlot/slots):'–')+' '+label;
+    };
+    updateEfficiency();
     const checkboxCell=document.createElement('td');
     const checkbox=document.createElement('input');checkbox.type='checkbox';checkbox.checked=module.enabled;checkbox.disabled=!isRaceAllowed||!fits;checkbox.title=tr.title||'Modul berücksichtigen';
     checkbox.addEventListener('change',()=>{module.enabled=checkbox.checked;dirty();});checkboxCell.append(checkbox);tr.append(checkboxCell);
@@ -266,9 +288,13 @@ function renderModules(){
       if(key==='maxCount')input.placeholder='∞';
       input.setAttribute('aria-label',`${key} für ${module.name}`);
       if(type==='number'){input.min=min;input.step='1'}
-      input.addEventListener('input',()=>{module[key]=key==='maxCount'?(input.value===''?null:input.value):input.value;dirty();});
-      if(key==='slots')input.addEventListener('change',renderModules);
-      td.dataset.label={name:'Name',slots:'Slots',cargo:'Fracht',extraction:'Level',maxCount:'Max. Anzahl'}[key];td.append(input);tr.append(td);
+      input.addEventListener('input',()=>{
+        module[key]=key==='maxCount'?(input.value===''?null:input.value):input.value;
+        if(['slots','cargo','extraction'].includes(key))updateEfficiency();
+        dirty();
+      });
+      if(key==='slots'||key==='extraction')input.addEventListener('change',renderModules);
+      td.dataset.label={name:'Name',slots:'Slots',cargo:'Fracht',extraction:'Level',maxCount:'Max. Anzahl'}[key];td.append(input);if(key==='name')td.append(efficiencyNote);tr.append(td);
     }
     const raceCell=document.createElement('td'),raceSelect=document.createElement('select');
     for(const [value,label] of [['all','Alle'],['nemoryx','Nemoryx'],['xyrrh','Xyrrh']]){
@@ -299,6 +325,7 @@ function inputs(){
   if(ships>300)throw new Error('Das Budget ergibt '+ships+' Schiffe. Die exakte Suche unterstützt derzeit höchstens 300 Schiffe. Bitte PA reduzieren oder einen größeren Schiffstyp auswählen.');
   const result={
     ships,shipId:ship.id,shipPa:ship.pa,maxPa,race,
+    searchMode:read('searchMode')==='exact'?'exact':'fast',
     slots:number(read('slots'),'Slots pro Schiff',{min:1,max:500,integer:true}),
     reserved:number(read('reserved'),'Reservierte Slots',{integer:true}),
     baseCargo:number(read('baseCargo'),'Basis-Fracht',{integer:true}),
@@ -323,6 +350,7 @@ function inputs(){
 function getRawSettings(){
   const ids=['maxPa','shipId','ships','slots','reserved','baseCargo','outbound','inbound','interval','efficiency','maxMining','cargoLimit'];
   const data=Object.fromEntries(ids.map(id=>[id,$(id).value]));
+  data.searchMode=$('searchMode').value;
   data.limitMode=document.querySelector('input[name=limitMode]:checked').value;
   data.race=$('race').value;
   data.schemaVersion=3;
@@ -354,6 +382,7 @@ function setSettings(data){
   for(const id of ['reserved','baseCargo','outbound','inbound','interval','efficiency','maxMining','cargoLimit'])$(id).value=src[id];
   updateFleetSize();
   $('race').value=['nemoryx','xyrrh'].includes(src.race)?src.race:'other';
+  $('searchMode').value=src.searchMode==='exact'?'exact':'fast';
   const mode=src.limitMode==='limit'?'limit':'none';
   document.querySelector(`input[name=limitMode][value="${mode}"]`).checked=true;
   $('cargoLimit').disabled=mode!=='limit';
@@ -547,7 +576,7 @@ function exportPlan(plan){
   const data=plan.data;
   const shipName=shipCatalog.find(entry=>entry.id===data.shipId)?.name||'Schiff';
   const lines=[
-    'Empire Universe 4 – Optimaler Flottenbauplan',
+    plan.method==='heuristic'?'Empire Universe 4 – Effizienzbasierter Flottenbauplan (Näherung)':'Empire Universe 4 – Optimaler Flottenbauplan (exakt)',
     `PA: ${integers.format(data.maxPa)} · Schiff: ${data.shipId} (${integers.format(data.shipPa)} PA pro Schiff)`,
     `Abbaueffizienz: ${format.format(data.efficiency??100)} % (Basis 1.000 Ressourcen/Min./Level)`,
     '===========================================',
@@ -600,7 +629,7 @@ function run(){
   $('cancelCalculation').hidden=false;
   $('calculationProgress').hidden=false;
   $('calculationProgress').removeAttribute('value'); // zunächst unbekannte Dauer
-  $('status').textContent='Berechnung im Hintergrund gestartet. Die Seite bleibt bedienbar.';
+  $('status').textContent=data.searchMode==='exact'?'Exakte Suche im Web Worker gestartet.':'Schnelle, effizienzbasierte Optimierung im Web Worker gestartet.';
   const fail=message=>{
     if(id!==requestId || worker!==currentWorker)return;
     cancelWork();
@@ -626,7 +655,7 @@ function run(){
       try{
         currentPlan=plan;
         renderResult(plan);
-        $('status').textContent='Optimaler Bauplan berechnet (exakte ganzzahlige Suche).';
+        $('status').textContent=plan.method==='heuristic'?'Schneller Bauplan berechnet (Effizienz-Heuristik mit lokalen Verbesserungen; Optimum nicht garantiert).':'Optimaler Bauplan berechnet (exakte ganzzahlige Suche).';
         try{localStorage.setItem('eu4-fleet-optimizer-settings',JSON.stringify(getRawSettings()));}catch(_){}
       }catch(error){
         currentPlan=null;
@@ -942,6 +971,7 @@ $('status').textContent='Einstellungen geladen. Zum Start „Beste Flotte berech
     originalRender(plan);
     const d=plan.data, mined=plan.level*d.resourceRate*plan.minutes;
     const items=[
+      ['Suchmethode',plan.method==='heuristic'?'Schnelle Greedy-Vorbelegung nach Effizienz pro Slot mit verschiedenen Fracht-/Laser-Verhältnissen und lokalen Modulwechseln. Das Ergebnis ist eine Näherung, kein garantiertes Optimum.':'Exakte dynamische Programmierung innerhalb der gewählten Suchgrenzen.'],
       ['Abbaueffizienz',`1.000 Ressourcen pro Minute und Extraktionslevel × ${fmt(d.efficiency??100)} % = ${fmt(d.resourceRate)} Ressourcen/min/Level.`],
       ['Abbauleistung',`${fmt(plan.level)} Extraktionsstärke ergibt ${fmt(plan.level*d.resourceRate)} Ressourcen pro Minute.`],
       ['Frachtauslastung',`${fmt(mined)} Ressourcen gefördert in ${fmt(plan.minutes)} Minuten; davon ${fmt(plan.perTrip)} transportierbar (${fmt(plan.usableCargo>0?100*plan.perTrip/plan.usableCargo:0)} % des Frachtraums).`],
