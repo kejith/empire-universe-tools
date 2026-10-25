@@ -35,6 +35,15 @@ Das Datenarchiv ist ein **Snapshot**, keine Live-Verbindung zum Spiel. Werte und
 
 ### Performance und Bedienbarkeit
 
+### Schnellere Optimierung: Effizienz pro Slot
+
+Im Flottenoptimierer stehen zwei Suchmethoden zur Wahl:
+
+- **Schnell (Standard, Näherung):** Jedes Modul wird nach **Fracht/Slot** beziehungsweise **Extraktionslevel/Slot** bewertet. Ein Greedy-Verfahren montiert zunächst die effizientesten passenden Module und nutzt anschließend die nächstbesten Module, sofern Slots und globale Bestandsgrenzen es zulassen. Eine Multi-Start-Suche untersucht verschiedene Fracht-/Laser-Verhältnisse, Packreihenfolgen, priorisierte Einzelwerte und spezialisierte Schiffsausrüstungen. Die besten Kandidaten werden durch lokal geprüfte Modulaustausche verbessert. Die tatsächliche Zielfunktion bleibt langfristige **Ressourcen pro Stunde** unter Berücksichtigung von Flugzeit, Abbaueffizienz und diskreten Abbauaktionen. **Es handelt sich um eine Heuristik; ein globales Optimum ist nicht garantiert.**
+- **Exakt (optional):** Weiterhin verfügbare dynamische Programmierung mit Pareto-Pruning. Zusätzlich werden nun unbeschränkt verfügbare Module, die ein anderes Modul bei gleicher oder geringerer Slotzahl in *Fracht und Extraktion* dominieren, vorab sicher herausgefiltert. Das reduziert den Suchraum **ohne die exakte Lösung zu ändern**. Die vorhandenen Speicher-/Rechenlimits bleiben bestehen.
+
+Beide Methoden laufen im Web Worker, unterstützen die Abbrechen-Funktion und berücksichtigen alle aktivierten Module aus beiden Tabs. Die Suchmethode wird in JSON-Einstellungen gespeichert und bei neuen Freigabelinks im **Format v4** übernommen; frühere Links (v1–v3) werden weiterhin eingelesen.
+
 Der Flottenoptimierer startet **nicht mehr automatisch** beim Öffnen, beim Laden gespeicherter Einstellungen oder eines Freigabelinks. Mit „Beste Flotte berechnen“ wird eine exakte Berechnung in einem **dedizierten Web Worker** gestartet. Die Oberfläche bleibt während der Suche bedienbar; Fortschrittsmeldungen und „Berechnung abbrechen“ stehen bereit. Bei Änderungen an den Einstellungen wird die vorherige Suche beendet, damit keine veralteten Ergebnisse erscheinen.
 
 Der Worker berechnet auch die alternativen Abbauzeiten und sendet nur die für die Anzeige benötigten Daten zurück. Die oft sehr großen internen Flotten-Zustände werden nicht an den Hauptthread übertragen. Es wird **keine Näherung** verwendet; bestehende Zustands- und Kombinationsgrenzen bleiben bestehen.
