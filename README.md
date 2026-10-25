@@ -27,6 +27,14 @@ Die JSON-Datei enthält die **Originalwerte und Originalnamen** des Exports. Vie
 
 Das Datenarchiv ist ein **Snapshot**, keine Live-Verbindung zum Spiel. Werte und Freischaltungen können sich ändern. Der Export enthält keine eigenen Spielerfreischaltungen und keine Modulbestände.
 
+### Performance und Bedienbarkeit
+
+Der Flottenoptimierer startet **nicht mehr automatisch** beim Öffnen, beim Laden gespeicherter Einstellungen oder eines Freigabelinks. Mit „Beste Flotte berechnen“ wird eine exakte Berechnung in einem **dedizierten Web Worker** gestartet. Die Oberfläche bleibt während der Suche bedienbar; Fortschrittsmeldungen und „Berechnung abbrechen“ stehen bereit. Bei Änderungen an den Einstellungen wird die vorherige Suche beendet, damit keine veralteten Ergebnisse erscheinen.
+
+Der Worker berechnet auch die alternativen Abbauzeiten und sendet nur die für die Anzeige benötigten Daten zurück. Die oft sehr großen internen Flotten-Zustände werden nicht an den Hauptthread übertragen. Es wird **keine Näherung** verwendet; bestehende Zustands- und Kombinationsgrenzen bleiben bestehen.
+
+Für die Worker-Datei benötigt die lokal geöffnete Anwendung üblicherweise einen HTTP-Server (`python3 -m http.server 8000` im Repository-Verzeichnis) oder die GitHub-Pages-Version. Reine `file://`-Aufrufe können Browser-Sicherheitsbeschränkungen auslösen.
+
 ### Flottenoptimierer
 
 Der Optimierer verwendet weiterhin als Spielmodell:
