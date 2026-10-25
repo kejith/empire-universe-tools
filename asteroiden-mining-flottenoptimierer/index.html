@@ -101,9 +101,11 @@ a{color:#7de3f3;text-decoration-thickness:1px;text-underline-offset:3px}
         <section class="panel">
           <h2>Flotte und Flug</h2>
           <div class="grid">
-            <div class="field"><label for="ships">Anzahl Schiffe</label><input id="ships" type="number" min="1" max="300" step="1" value="80"></div>
+            <div class="field"><label for="maxPa">Maximale Baupunkte (PA)</label><input id="maxPa" type="number" min="0" step="1" value="2000"></div>
+            <div class="field"><label for="shipId">Schiffstyp</label><select id="shipId"></select><small id="shipInfo">Fregatte: 25 PA · 32 Slots</small></div>
+            <div class="field"><label for="ships">Berechnete Anzahl Schiffe</label><output id="ships" aria-live="polite">80</output><small id="paInfo">2.000 PA ÷ 25 PA = 80 Schiffe (0 PA verbleiben)</small></div>
             <div class="field"><label for="race">Rasse für rassenexklusive Module</label><select id="race"><option value="other">Andere / keine Sondermodule</option><option value="nemoryx">Nemoryx</option><option value="xyrrh">Xyrrh</option></select></div>
-            <div class="field"><label for="slots">Slots pro Schiff</label><input id="slots" type="number" min="1" max="500" step="1" value="32"></div>
+            <div class="field"><label for="slots">Slots pro Schiff (aus Schiffstyp)</label><input id="slots" type="number" min="1" max="500" value="32" readonly></div>
             <div class="field"><label for="reserved">Reservierte Slots pro Schiff (z. B. Antrieb)</label><input id="reserved" type="number" min="0" step="1" value="4"></div>
             <div class="field"><label for="baseCargo">Basis-Fracht pro Schiff</label><input id="baseCargo" type="number" min="0" step="1" value="0"></div>
             <div class="field"><label for="outbound">Hinflug (Minuten)</label><input id="outbound" type="number" min="0" step="0.1" value="5"></div>
@@ -126,6 +128,10 @@ a{color:#7de3f3;text-decoration-thickness:1px;text-underline-offset:3px}
         <section class="panel">
           <h2>Berücksichtigte Module</h2>
           <p class="smallprint">Häkchen setzen/entfernen und Werte jederzeit ändern. Zusätzliche Module können angelegt werden. Slots, Fracht und Extraktionslevel gelten <strong>je Modul</strong>. Die <strong>maximale Anzahl</strong> gilt für die gesamte Flotte. Leer = unbegrenzt, 0 = nicht verfügbar.</p>
+          <div class="module-tabs" role="tablist" aria-label="Modulgruppen">
+            <button class="module-tab active" type="button" id="tabCargo" role="tab" aria-selected="true" aria-controls="moduleRows">Fracht <span id="countCargo"></span></button>
+            <button class="module-tab" type="button" id="tabLaser" role="tab" aria-selected="false" aria-controls="moduleRows">Laser <span id="countLaser"></span></button>
+          </div>
           <div class="scroller"><table class="module-table">
             <thead><tr><th title="Berücksichtigen">An</th><th>Name</th><th>Slots</th><th>Fracht</th><th>Level</th><th>Max. Anzahl</th><th>Rasse</th><th></th></tr></thead>
             <tbody id="moduleRows"></tbody>
@@ -133,7 +139,7 @@ a{color:#7de3f3;text-decoration-thickness:1px;text-underline-offset:3px}
           <div class="actions" style="margin-top:13px">
             <button class="btn" type="button" id="addModule">+ Modul hinzufügen</button>
           </div>
-          <p class="help">Enthält alle 13 aus deinen Screenshots bekannten Module. Rassenexklusive Module werden nur für die gewählte Rasse berücksichtigt. Module, die nicht in die freien Slots passen (z. B. Jumbo mit 40/45 Slots bei 28 freien Slots), werden automatisch ausgeschlossen. <strong>Hinweis:</strong> Beim Nemoryx-Extraktor steht in der Beschreibung „9“, der grüne Modifier zeigt aber <strong>+14</strong> – hier ist +14 eingetragen.</p>
+          <p class="help">Enthält dauerhaft alle 10 Frachtmodule und 7 Asteroiden-Laser aus dem Referenzexport. Die Tabs filtern lediglich die Ansicht, beide Gruppen werden zusammen optimiert. Neue seltene Module sind zunächst deaktiviert. Rassenmodule und Slotgrenzen werden berücksichtigt; nicht passende Module bleiben sichtbar, können aber nicht ausgewählt werden.</p>
         </section>
         <section class="panel">
           <h2>Einstellungen speichern</h2>
@@ -187,25 +193,13 @@ a{color:#7de3f3;text-decoration-thickness:1px;text-underline-offset:3px}
 <script>
 'use strict';
 
-const defaults = {
-  ships:80, slots:32, reserved:4, baseCargo:0, outbound:5, inbound:5,
-  interval:5, efficiency:100, maxMining:0, limitMode:'none', cargoLimit:10000000, race:'other', schemaVersion:2,
-  modules:[
-    {id:'cargo-s',name:'Fracht S',slots:1,cargo:17000,extraction:0,enabled:true,race:'all'},
-    {id:'cargo-m',name:'Fracht M',slots:3,cargo:75000,extraction:0,enabled:true,race:'all'},
-    {id:'cargo-xl',name:'Fracht XL',slots:10,cargo:600000,extraction:0,enabled:true,race:'all'},
-    {id:'cargo-xl230',name:'Fracht XL-230',slots:16,cargo:1400000,extraction:0,enabled:true,race:'all'},
-    {id:'cargo-xl270',name:'Fracht XL-270',slots:17,cargo:2100000,extraction:0,enabled:true,race:'all'},
-    {id:'cargo-mini',name:'Mini-Fracht',slots:2,cargo:600000,extraction:0,enabled:true,race:'all'},
-    {id:'cargo-jumbo',name:'Jumbo-Fracht',slots:45,cargo:18000000,extraction:0,enabled:true,race:'all'},
-    {id:'cargo-xyrrh',name:'Verbesserter Mini-Frachtraum – Xyrrh',slots:6,cargo:3000000,extraction:0,enabled:true,race:'xyrrh'},
-    {id:'laser-i',name:'Asteroiden-Laser I',slots:5,cargo:0,extraction:1,enabled:true,race:'all'},
-    {id:'laser-ii',name:'Asteroiden-Laser II',slots:8,cargo:0,extraction:3,enabled:true,race:'all'},
-    {id:'laser-mini',name:'Mini-Asteroiden-Laser',slots:4,cargo:0,extraction:3,enabled:true,race:'all'},
-    {id:'laser-jumbo',name:'Jumbo-Asteroiden-Laser',slots:40,cargo:0,extraction:40,enabled:true,race:'all'},
-    {id:'laser-nemoryx',name:'Verbesserter Mini-Asteroidenextraktor – Nemoryx',slots:8,cargo:0,extraction:14,enabled:true,race:'nemoryx'}
-  ]
-};
+// Versionierter, permanenter Auszug aus dem offiziellen Referenzexport (25.10.2026).
+// Nur echte Frachtmodule und Asteroiden-Extraktionslaser; keine Truppen-/Stationsmodule.
+const shipCatalog = [{"id":"sonde","name":"Sonde","slots":4,"pa":4},{"id":"explorateur","name":"Explorateur","slots":6,"pa":4},{"id":"navette","name":"Navette","slots":10,"pa":10},{"id":"chasseur","name":"Chasseur","slots":15,"pa":15},{"id":"corvette","name":"Corvette","slots":25,"pa":20},{"id":"fregate","name":"Fregatte","slots":32,"pa":25},{"id":"destroyer","name":"Destroyer","slots":40,"pa":30},{"id":"croiseur","name":"Croiseur","slots":65,"pa":40},{"id":"intercepteur","name":"Intercepteur","slots":55,"pa":35},{"id":"aurora_wing","name":"Aile Aurora","slots":95,"pa":50},{"id":"croiseur_intergalactique","name":"Croiseur Intergalactique","slots":55,"pa":60},{"id":"croiseur_combat","name":"Croiseur de Combat","slots":70,"pa":50},{"id":"warrior","name":"Guerrier","slots":120,"pa":80},{"id":"transporteur","name":"Transporteur","slots":140,"pa":80},{"id":"centaure","name":"Centaure","slots":170,"pa":100},{"id":"minotaure","name":"Minotaure","slots":190,"pa":120},{"id":"titan","name":"Titan","slots":220,"pa":140},{"id":"kraken","name":"Kraken","slots":260,"pa":155},{"id":"behemoth","name":"Béhémoth","slots":400,"pa":210},{"id":"hades","name":"Hadès","slots":420,"pa":250},{"id":"transporteurIntergalactique","name":"Transporteur Intergalactique","slots":240,"pa":100}];
+const moduleAliases = {"cargo-s":"cargos","cargo-m":"cargom","cargo-xl":"cargoXL","cargo-xl230":"cargoXL230","cargo-xl270":"cargoXL270","cargo-mini":"cargoMini","cargo-jumbo":"cargoJumbo","cargo-xyrrh":"cargoMiniXyrrh","laser-i":"laserExtractionAsteroid","laser-ii":"laserExtractionAsteroid2","laser-mini":"laserExtractionMini","laser-jumbo":"laserExtractionJumbo","laser-nemoryx":"laserExtractionMiniNemoryx"};
+const defaults = {"ships":80,"maxPa":2000,"shipId":"fregate","slots":32,"reserved":4,"baseCargo":0,"outbound":5,"inbound":5,"interval":5,"efficiency":100,"maxMining":0,"limitMode":"none","cargoLimit":10000000,"race":"other","schemaVersion":3,"modules":[{"id":"cargos","name":"Fracht S","slots":1,"cargo":17000,"extraction":0,"enabled":true,"race":"all","maxCount":null},{"id":"cargom","name":"Fracht M","slots":3,"cargo":75000,"extraction":0,"enabled":true,"race":"all","maxCount":null},{"id":"cargoL","name":"Fracht L","slots":8,"cargo":300000,"extraction":0,"enabled":false,"race":"all","maxCount":null},{"id":"cargoXL","name":"Fracht XL","slots":10,"cargo":600000,"extraction":0,"enabled":true,"race":"all","maxCount":null},{"id":"cargoXL230","name":"Fracht XL-230","slots":16,"cargo":1400000,"extraction":0,"enabled":true,"race":"all","maxCount":null},{"id":"cargoXL270","name":"Fracht XL-270","slots":17,"cargo":2100000,"extraction":0,"enabled":true,"race":"all","maxCount":null},{"id":"cargoMini","name":"Mini-Fracht","slots":2,"cargo":600000,"extraction":0,"enabled":true,"race":"all","maxCount":null},{"id":"cargoJumbo","name":"Jumbo-Fracht","slots":45,"cargo":18000000,"extraction":0,"enabled":true,"race":"all","maxCount":null},{"id":"cargoAlienArtefact","name":"Alien-Artefakt-Fracht","slots":10,"cargo":12500000,"extraction":0,"enabled":false,"race":"all","maxCount":null},{"id":"cargoMiniXyrrh","name":"Verbesserter Mini-Frachtraum – Xyrrh","slots":6,"cargo":3000000,"extraction":0,"enabled":true,"race":"xyrrh","maxCount":null},{"id":"laserExtractionAsteroid","name":"Asteroiden-Laser I","slots":5,"cargo":0,"extraction":1,"enabled":true,"race":"all","maxCount":null},{"id":"laserExtractionAsteroid2","name":"Asteroiden-Laser II","slots":8,"cargo":0,"extraction":3,"enabled":true,"race":"all","maxCount":null},{"id":"laserExtractionAsteroid3","name":"Asteroiden-Laser III","slots":12,"cargo":0,"extraction":6,"enabled":false,"race":"all","maxCount":null},{"id":"laserExtractionMini","name":"Mini-Asteroiden-Laser","slots":4,"cargo":0,"extraction":3,"enabled":true,"race":"all","maxCount":null},{"id":"laserExtractionJumbo","name":"Jumbo-Asteroiden-Laser","slots":40,"cargo":0,"extraction":40,"enabled":true,"race":"all","maxCount":null},{"id":"moduleLaserExtractSystemAlienArtefact","name":"Alien-Artefakt-Extraktionslaser","slots":10,"cargo":0,"extraction":15,"enabled":false,"race":"all","maxCount":null},{"id":"laserExtractionMiniNemoryx","name":"Verbesserter Mini-Asteroidenextraktor – Nemoryx","slots":8,"cargo":0,"extraction":14,"enabled":true,"race":"nemoryx","maxCount":null}]};
+const permanentModuleIds=new Set(defaults.modules.map(m=>m.id));
+let activeModuleTab='cargo';
 const $ = id => document.getElementById(id);
 const format = new Intl.NumberFormat('de-DE',{maximumFractionDigits:2});
 const integers = new Intl.NumberFormat('de-DE',{maximumFractionDigits:0});
@@ -220,12 +214,34 @@ let modules=clone(defaults.modules).map(m=>({...m,maxCount:null}));
 let currentPlan=null;
 let currentWorker=null;
 let requestId=0;
+for(const item of shipCatalog){
+  const option=document.createElement('option');
+  option.value=item.id;
+  option.textContent=item.name+' · '+item.pa+' PA · '+item.slots+' Slots';
+  $('shipId').append(option);
+}
+function switchModuleTab(tab){
+  activeModuleTab=tab;
+  for(const [kind,id] of [['cargo','tabCargo'],['laser','tabLaser']]){
+    const button=$(id);
+    button.classList.toggle('active',kind===tab);
+    button.setAttribute('aria-selected',String(kind===tab));
+  }
+  renderModules();
+}
+$('tabCargo').addEventListener('click',()=>switchModuleTab('cargo'));
+$('tabLaser').addEventListener('click',()=>switchModuleTab('laser'));
+$('maxPa').addEventListener('input',()=>{updateFleetSize();dirty();});
+$('shipId').addEventListener('change',()=>{updateFleetSize();renderModules();dirty();});
 
 function renderModules(){
   const body=$('moduleRows'); body.replaceChildren();
   const race=$('race').value;
   const freeSlots=Math.max(0,Number($('slots').value)-Number($('reserved').value));
+  $('countCargo').textContent='('+modules.filter(m=>Number(m.extraction)<=0).length+')';
+  $('countLaser').textContent='('+modules.filter(m=>Number(m.extraction)>0).length+')';
   for(const module of modules){
+    if((Number(module.extraction)>0?'laser':'cargo')!==activeModuleTab)continue;
     const tr=document.createElement('tr');
     const isRaceAllowed=module.race==='all'||module.race===race;
     const fits=Number(module.slots)<=freeSlots;
@@ -253,14 +269,24 @@ function renderModules(){
     const deleteCell=document.createElement('td'),deleteButton=document.createElement('button');
     deleteButton.type='button';deleteButton.className='icon-btn';deleteButton.textContent='×';deleteButton.title=`${module.name} entfernen`;
     deleteButton.addEventListener('click',()=>{modules=modules.filter(m=>m!==module);renderModules();dirty();});
+    if(permanentModuleIds.has(module.id)){
+      deleteButton.disabled=true;
+      deleteButton.title='Datenbankmodul kann deaktiviert, aber nicht entfernt werden';
+    }
     deleteCell.append(deleteButton);tr.append(deleteCell);body.append(tr);
   }
 }
 function inputs(){
   const read=id=>$(id).value;
   const race=read('race');
+  const maxPa=number(read('maxPa'),'Maximale PA',{min:0,integer:true});
+  const ship=shipCatalog.find(item=>item.id===read('shipId'));
+  if(!ship)throw new Error('Bitte einen gültigen Schiffstyp auswählen.');
+  const ships=Math.floor(maxPa/ship.pa);
+  if(ships<1)throw new Error('Die PA reichen für kein Schiff dieses Typs. Mindestens '+ship.pa+' PA erforderlich.');
+  if(ships>300)throw new Error('Das Budget ergibt '+ships+' Schiffe. Die exakte Suche unterstützt derzeit höchstens 300 Schiffe. Bitte PA reduzieren oder einen größeren Schiffstyp auswählen.');
   const result={
-    ships:number(read('ships'),'Anzahl Schiffe',{min:1,max:300,integer:true}),race,
+    ships,shipId:ship.id,shipPa:ship.pa,maxPa,race,
     slots:number(read('slots'),'Slots pro Schiff',{min:1,max:500,integer:true}),
     reserved:number(read('reserved'),'Reservierte Slots',{integer:true}),
     baseCargo:number(read('baseCargo'),'Basis-Fracht',{integer:true}),
@@ -283,26 +309,57 @@ function inputs(){
   return result;
 }
 function getRawSettings(){
-  const ids=['ships','slots','reserved','baseCargo','outbound','inbound','interval','efficiency','maxMining','cargoLimit'];
+  const ids=['maxPa','shipId','ships','slots','reserved','baseCargo','outbound','inbound','interval','efficiency','maxMining','cargoLimit'];
   const data=Object.fromEntries(ids.map(id=>[id,$(id).value]));
   data.limitMode=document.querySelector('input[name=limitMode]:checked').value;
   data.race=$('race').value;
-  data.schemaVersion=2;
+  data.schemaVersion=3;
   data.modules=clone(modules);return data;
+}
+function updateFleetSize(){
+  const ship=shipCatalog.find(item=>item.id===$('shipId').value);
+  const budget=Number($('maxPa').value);
+  const count=ship&&Number.isSafeInteger(budget)&&budget>=0 ? Math.floor(budget/ship.pa) : 0;
+  $('ships').value=String(count);
+  if(ship){
+    $('slots').value=ship.slots;
+    $('shipInfo').textContent=ship.name+': '+integers.format(ship.pa)+' PA · '+integers.format(ship.slots)+' Slots';
+    $('paInfo').textContent=Number.isFinite(count)?integers.format(budget)+' PA ÷ '+integers.format(ship.pa)+' PA = '+integers.format(count)+' Schiffe ('+integers.format(Math.max(0,budget-count*ship.pa))+' PA verbleiben)':'Ungültiges PA-Budget';
+  }
+  return count;
 }
 function setSettings(data){
   const src={...defaults,...data};
   if(data.efficiency==null && data.resourceRate!=null)src.efficiency=Number(data.resourceRate)/10;
-  for(const id of ['ships','slots','reserved','baseCargo','outbound','inbound','interval','efficiency','maxMining','cargoLimit'])$(id).value=src[id];
+  const inferred=shipCatalog.find(s=>s.slots===Number(src.slots))||shipCatalog.find(s=>s.id==='fregate');
+  const shipId=shipCatalog.some(s=>s.id===data.shipId)?data.shipId:inferred.id;
+  const ship=shipCatalog.find(s=>s.id===shipId);
+  // Bestehende v1/v2-Einstellungen hatten nur eine Schiffszahl. Das Budget
+  // wird so migriert, dass die bisherige Anzahl erhalten bleibt.
+  const budget=data.maxPa!=null ? data.maxPa : data.ships!=null?Number(data.ships)*ship.pa : defaults.maxPa;
+  $('shipId').value=shipId;
+  $('maxPa').value=budget;
+  for(const id of ['reserved','baseCargo','outbound','inbound','interval','efficiency','maxMining','cargoLimit'])$(id).value=src[id];
+  updateFleetSize();
   $('race').value=['nemoryx','xyrrh'].includes(src.race)?src.race:'other';
   const mode=src.limitMode==='limit'?'limit':'none';
   document.querySelector(`input[name=limitMode][value="${mode}"]`).checked=true;
   $('cargoLimit').disabled=mode!=='limit';
   if(!Array.isArray(src.modules)||src.modules.length>100)throw new Error('Die Modulliste in der Datei ist ungültig.');
-  // Previous HTML versions had only five modules. Preserve edited and custom
-  // settings, adding only the new modules on first migration to version 2.
-  const incoming=Number(data.schemaVersion)>=2?src.modules:[...src.modules,...defaults.modules.filter(m=>!src.modules.some(existing=>existing.id===m.id))];
-  modules=incoming.map((m,i)=>({id:String(m.id||`custom-${i}`),name:String(m.name??''),slots:m.slots??1,cargo:m.cargo??0,extraction:m.extraction??0,enabled:Boolean(m.enabled),race:['nemoryx','xyrrh'].includes(m.race)?m.race:'all',maxCount:m.maxCount??null}));
+  const original=Number(data.schemaVersion)<2?
+    [...src.modules,...defaults.modules.filter(m=>!src.modules.some(x=>x.id===m.id))]:src.modules;
+  const taken=new Set();
+  const saved=[];
+  for(const [i,m] of original.entries()){
+    const id=moduleAliases[m.id]||String(m.id||`custom-${i}`);
+    if(taken.has(id))continue;
+    taken.add(id);
+    saved.push({...m,id,name:String(m.name??''),slots:m.slots??1,cargo:m.cargo??0,extraction:m.extraction??0,enabled:Boolean(m.enabled),race:['nemoryx','xyrrh'].includes(m.race)?m.race:'all',maxCount:m.maxCount??null});
+  }
+  const existing=new Map(saved.map(m=>[m.id,m]));
+  // Katalogmodule bleiben auch nach dem Einlesen alter Konfigurationen verfügbar.
+  modules=defaults.modules.map(base=>existing.get(base.id)||clone(base));
+  for(const item of saved)if(!permanentModuleIds.has(item.id))modules.push(item);
   renderModules();dirty();
 }
 function dirty(){
@@ -477,6 +534,7 @@ function exportPlan(plan){
   const data=plan.data;
   const lines=[
     'Empire Universe 4 – Optimaler Flottenbauplan',
+    `PA: ${integers.format(data.maxPa)} · Schiff: ${data.shipId} (${integers.format(data.shipPa)} PA pro Schiff)`,
     `Abbaueffizienz: ${format.format(data.efficiency??100)} % (Basis 1.000 Ressourcen/Min./Level)`,
     '===========================================',
     `Schiffe: ${data.ships} | Slots pro Schiff: ${data.slots} | Reserviert: ${data.reserved}`,
@@ -573,7 +631,7 @@ $('cancelCalculation').addEventListener('click',()=>{
   $('status').textContent='Berechnung abgebrochen. Einstellungen bleiben erhalten.';
 });
 $('race').addEventListener('change',()=>{renderModules();dirty();});
-document.querySelectorAll('input:not(#importFile)').forEach(input=>{
+document.querySelectorAll('input:not(#importFile):not(#maxPa)').forEach(input=>{
   input.addEventListener('input',()=>{if(input.name==='limitMode')$('cargoLimit').disabled=input.value!=='limit';dirty();if(input.id==='slots'||input.id==='reserved')renderModules();});
   input.addEventListener('change',()=>{if(input.name==='limitMode')$('cargoLimit').disabled=document.querySelector('input[name=limitMode]:checked').value!=='limit';dirty();});
 });
