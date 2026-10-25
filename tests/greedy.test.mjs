@@ -131,3 +131,18 @@ test('High-efficiency module ratios are evaluated at original values',()=>{
   checkInventory(d,plan);
   assert.ok(plan.rate>0);
 });
+
+test('80 ships with scarce module inventory are feasible in the fast mode',()=>{
+  const d=data({ships:80,slots:32,reserved:4,modules:[
+    {id:'miniLaser',name:'Mini-Asteroiden-Laser',slots:4,cargo:0,extraction:3,maxCount:40},
+    {id:'bigLaser',name:'Jumbo Laser',slots:40,cargo:0,extraction:40,maxCount:null},
+    {id:'cargoMini',name:'Mini-Fracht',slots:2,cargo:600000,extraction:0,maxCount:20},
+    {id:'cargoXL',name:'Fracht XL',slots:10,cargo:600000,extraction:0,maxCount:null}
+  ]});
+  const started=Date.now();
+  const {plan}=execute(d,'fast');
+  const milliseconds=Date.now()-started;
+  checkInventory(d,plan);
+  assert.ok(plan.rate>0);
+  assert.ok(milliseconds<15000,'Fast mode took too long for an 80-ship bounded scenario: '+milliseconds+' ms');
+});
