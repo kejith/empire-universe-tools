@@ -2,6 +2,8 @@
 (() => {
   const $ = id => document.getElementById(id);
   const number = new Intl.NumberFormat('de-DE');
+  const de = window.EU4Deutsch;
+  if(!de)throw new Error('Die deutsche Lokalisierungsdatei fehlt.');
   const categoryNames = {cargo:'Fracht',engine:'Antrieb',defense:'Verteidigung',weapon:'Waffen',other:'Sonstige',construction:'Konstruktion',normal:'Allgemein'};
   const buildingNames = {
     COMMUNICATION:'Kommunikationszentrum',FACTORY:'Fabrik',MINES:'Minen',RESEARCH:'Forschung',
@@ -31,9 +33,9 @@
   };
   const addText = (parent,tag,className,text) => parent.appendChild(el(tag,className,text));
   const fmt = value => typeof value==='number'?number.format(value):String(value ?? '–');
-  const classification = type => categoryNames[type]||type||'—';
+  const classification = type => de.types[type]||categoryNames[type]||type||'—';
   const isMiningModule = m => m && (Number(m.modifier?.cargo||0)>0 || Number(m.modifier?.extraction_asteroid||0)>0);
-  const customTitle = record => catalog==='modules' ? (miningModuleNames[record.id]||record.data.name||record.id) : record.name;
+  const customTitle = record => de.name(record.catalog,record.id,record.name);
   function recordsFor(type) {
     const ds = data.catalogs[type];
     if(type==='modules')return Object.entries(ds.modules).map(([id,value])=>({id,name:value.name,data:value,type:value.type||'other',catalog:type}));
@@ -70,7 +72,7 @@
   }
   function searchText(item) {
     // Aus Originaldaten abgeleiteter Suchindex, ohne diese zu verändern.
-    return (customTitle(item)+' '+item.name+' '+item.id+' '+item.type+' '+JSON.stringify(item.data)).toLocaleLowerCase('de');
+    return (customTitle(item)+' '+(de.description(item.catalog,item.id,item.data)||'')+' '+item.name+' '+item.id+' '+item.type+' '+JSON.stringify(item.data)).toLocaleLowerCase('de');
   }
   function filtered() {
     const q=$('search').value.trim().toLocaleLowerCase('de');
@@ -107,9 +109,18 @@
     for(const item of found){
       const button=el('button','result-card'+(selected===item.id?' selected':''));button.type='button';
       button.dataset.id=item.id;
-      addText(button,'span','item-name',customTitle(item));
-      addText(button,'span','item-type',classification(item.type));
-      addText(button,'span','item-code',item.id);
+      const imageUrl=(catalog==='modules'||catalog==='ships') ? item.data.img : null;
+      if(typeof imageUrl==='string'&&/^https:\/\/eu4\.s3\.eu-west-3\.amazonaws\.com\//.test(imageUrl)){
+        const image=el('img','card-image');
+        image.src=imageUrl;image.alt='';image.loading='lazy';image.referrerPolicy='no-referrer';
+        image.onerror=()=>image.remove();
+        button.append(image);
+      }
+      const headings=el('span','card-headings');
+      addText(headings,'span','item-name',customTitle(item));
+      addText(headings,'span','item-type',classification(item.type));
+      addText(headings,'span','item-code',item.id);
+      button.append(headings);
       const stats=el('span','item-stats');
       for(const [text,extra] of chips(item))addText(stats,'span','chip '+(extra||''),text);
       button.append(stats);fragment.append(button);
@@ -158,8 +169,12 @@
       const img=el('img');img.src=image;img.alt='';img.loading='lazy';img.referrerPolicy='no-referrer';header.append(img);
     }
     const head=el('div');addText(head,'h2',null,customTitle(item));
-    if(item.data.description)addText(head,'p','lead',item.data.description);
-    if(customTitle(item)!==item.name)addText(head,'p','subtle','Originalname: '+item.name);
+    const translatedDescription=de.description(item.catalog,item.id,item.data);
+    if(translatedDescription)addText(head,'p','lead',translatedDescription);
+    addText(head,'p','i18n-note',de.origin(item.catalog,item.id)==='Wiki'?
+      'Bezeichnung aus der deutschen Spiel-Wiki'+(item.catalog==='buildings'?', Beschreibung aus der Spiel-Wiki.':'. Deutsche Kurzbeschreibung aus strukturierten Spieldaten.'):
+      'Redaktionell übersetzte Bezeichnung. Deutsche Kurzbeschreibung aus strukturierten Spieldaten – keine wortgetreue Übersetzung der Originalbeschreibung.');
+    if(customTitle(item)!==item.name)addText(head,'p','subtle','Originalname (FR): '+item.name);
     header.append(head);parent.append(header);
   }
   function updateDetail(item) {
@@ -173,9 +188,7 @@
     if(catalog==='modules'){
       addText(root,'h3',null,'Moduldaten');
       addKeyValues(root,[['Typ',classification(v.type)],['Slots',v.emplacement],['Rasse',v.raceRequired||'Alle (laut Export)']]);
-      listSection(root,'Effekte',Object.entries(v.modifier||{}).map(([k,val])=>[({
-        cargo:'Frachtraum',extraction_asteroid:'Asteroidenextraktion',mining_optimizer:'Mining-Optimierer',extraction_debris:'Wrackextraktion'
-      }[k]||k),val]));
+      listSection(root,'Effekte',Object.entries(v.modifier||{}).map(([k,val])=>[de.labels[k]||k,val]));
       listSection(root,'Baukosten',Object.entries(v.cost||{}).filter(([,count])=>count!==0));
       if(isMiningModule(v)){
         const link=el('a','primary-link','Im Flottenoptimierer verwenden');
