@@ -87,7 +87,19 @@ a{color:#7de3f3;text-decoration-thickness:1px;text-underline-offset:3px}
 .module-table .module-incompatible{opacity:.6}
 @media(max-width:490px){.module-table tr{column-gap:6px;padding:9px}.module-table input[type=number],.module-table input[type=text],.module-table select{font-size:12px;padding:8px 4px}}
 
-  </style>
+  
+/* PA-basierte Flottengröße und zweigeteilte Modulauswahl */
+#ships{display:flex;align-items:center;justify-content:flex-start;min-height:41px;padding:8px 11px;border:1px solid #2e5062;border-radius:9px;background:#123241;color:#9af4e3;font-size:20px;font-weight:800;font-variant-numeric:tabular-nums}
+#shipId{max-width:100%}
+#shipInfo,#paInfo{display:block;line-height:1.4;margin-top:4px;color:#94b5c8;font-size:11px}
+.module-tabs{display:flex;gap:7px;flex-wrap:wrap;margin:12px 0 16px;border-bottom:1px solid #2f4b61;padding-bottom:10px}
+.module-tab{min-width:110px;padding:9px 16px;background:#12273a;border:1px solid #304e61;color:#bed4e4;border-radius:9px;cursor:pointer;font-weight:700;transition:background .15s,border-color .15s}
+.module-tab.active{background:#145467;color:#b5f8ff;border-color:#4caac2}
+.module-tab:hover{border-color:#69cbda}
+.module-tab span{font-weight:500;font-size:11px;opacity:.85;margin-left:4px}
+.module-tab:focus-visible{outline:2px solid #7be5f3;outline-offset:3px}
+@media(max-width:480px){.module-tab{flex:1 1 125px}}
+</style>
 </head>
 <body>
   <main class="wrap">
