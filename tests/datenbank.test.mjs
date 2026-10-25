@@ -36,13 +36,15 @@ test('Datenbank zeigt die Quelle und behandelt Originaltext als Text',()=>{
   assert.match(app,/referenzdaten\.json/);
 });
 
-test('Optimierer importiert Modulbestand und Freischaltung ohne Verlust',()=>{
-  assert.match(bridge,/maxCount:existing\?\.maxCount\?\?null/);
-  assert.match(bridge,/enabled:existing\?Boolean\(existing\.enabled\):activate/);
-  assert.match(bridge,/item\.enabled=true/);
-  assert.match(bridge,/legacyIds/);
-  assert.match(bridge,/laserExtractionAsteroid3/);
-  assert.match(bridge,/cargoAlienArtefact/);
+test('Optimierer nutzt einen dauerhaften Referenzkatalog und kann Module per Link aktivieren',()=>{
+  assert.match(opt,/const moduleAliases =/);
+  assert.match(opt,/laserExtractionAsteroid3/);
+  assert.match(opt,/cargoAlienArtefact/);
+  assert.match(opt,/permanentModuleIds/);
+  assert.match(bridge,/const existing=modules\.find\(m=>m\.id===id\)/);
+  assert.match(bridge,/existing\.enabled=true/);
+  assert.match(bridge,/switchModuleTab/);
+  assert.match(bridge,/if\(!id\)return/);
 });
 
 test('Navigation und GitHub Pages veröffentlichen beide Werkzeuge',()=>{
