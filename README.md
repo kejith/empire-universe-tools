@@ -25,6 +25,12 @@ Unter `datenbank/` liegen eine vollständig statische Oberfläche und die Refere
 
 Die JSON-Datei enthält die **Originalwerte und Originalnamen** des Exports. Viele Namen/Beschreibungen sind französisch; die Oberfläche ist deutsch. Die Datenbank zeigt Effekte, Slots, Kosten, Voraussetzungen, sortier- und filterbare Suchergebnisse sowie ursprüngliche Datensätze. Verlinkte Module lassen sich direkt im Flottenoptimierer übernehmen.
 
+### Deutsche Bezeichnungen und Modulbilder
+
+Die deutschsprachige Darstellung ergänzt den unveränderten Referenzexport. `datenbank/lokalisierung-de.js` enthält **belegte deutsche Namen** aus einer vom Nutzer bereitgestellten, deutsch gerenderten Wiki-Seite (u. a. Frachtmodule, erste Laserwaffen, ausgewählte Schiffe und Forschung sowie elf Gebäude mit Beschreibungen). Für die übrigen Einträge werden redaktionelle deutsche Bezeichnungen und aus den tatsächlich vorhandenen numerischen Effekten erstellte **deutsche Kurzbeschreibungen** angezeigt. Diese sind bewusst **keine vollständigen wortgetreuen Übersetzungen** der französischen Originalbeschreibungen. Die Originalnamen und Originaltexte können in der Detailansicht unter „Originaldaten (JSON)“ eingesehen werden.
+
+Die Modul- und Schiffsbilder stammen aus den bereits im öffentlichen Referenzexport vorhandenen `img`-URLs auf `eu4.s3.eu-west-3.amazonaws.com`. Für **alle 144 Module** ist eine solche URL enthalten. Bilder werden auf der Seite erst bei Bedarf geladen (Lazy Loading), nicht in GitHub gespeichert. Der bereitgestellte HTML-Export wurde **nicht** ins Repository übernommen.
+
 Das Datenarchiv ist ein **Snapshot**, keine Live-Verbindung zum Spiel. Werte und Freischaltungen können sich ändern. Der Export enthält keine eigenen Spielerfreischaltungen und keine Modulbestände.
 
 ### Performance und Bedienbarkeit
