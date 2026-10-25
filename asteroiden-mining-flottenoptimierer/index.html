@@ -51,6 +51,8 @@ a{color:#7de3f3;text-decoration-thickness:1px;text-underline-offset:3px}
   .btn-reset{border-color:#8a4a58;color:#ffcbd4}
   .btn-reset:hover{background:#46212b;border-color:#da7287}
 #shareStatus:empty{display:none}
+#calculationProgress{display:block;width:100%;height:9px;margin:8px 0 14px;accent-color:#4ed5db}
+#calculationProgress[hidden]{display:none}
 #totalModules{display:flex;gap:6px;flex-wrap:wrap}
 .erklaerung{margin-top:18px;padding:18px;background:#0d2330;border:1px solid #28586a;border-radius:10px}
 .erklaerung h2{margin-bottom:12px}
@@ -147,8 +149,8 @@ a{color:#7de3f3;text-decoration-thickness:1px;text-underline-offset:3px}
 
       <div class="stack">
         <section class="panel">
-          <div class="actions"><button class="btn primary" id="calculate" type="button">Beste Flotte berechnen</button><button class="btn" id="downloadPlan" type="button" disabled>Bauplan als TXT</button></div>
-          <div id="status" class="status" role="status" aria-live="polite">Bereit zur Berechnung.</div>
+          <div class="actions"><button class="btn primary" id="calculate" type="button">Beste Flotte berechnen</button><button class="btn" id="cancelCalculation" type="button" hidden>Berechnung abbrechen</button><button class="btn" id="downloadPlan" type="button" disabled>Bauplan als TXT</button></div>
+          <div id="status" class="status" role="status" aria-live="polite">Bereit zur Berechnung.</div><progress id="calculationProgress" max="100" value="0" aria-label="Fortschritt der Flottenoptimierung" hidden></progress>
           <div id="empty" class="empty">Nach der Berechnung erscheinen hier optimaler Modul-Mix, Abbauzeit und Ressourcen pro Stunde.</div>
           <div id="results" class="hidden">
             <div class="metrics">
@@ -216,6 +218,8 @@ const number = (value,label,{min=0,integer=false,max=Number.MAX_SAFE_INTEGER}={}
 };
 let modules=clone(defaults.modules).map(m=>({...m,maxCount:null}));
 let currentPlan=null;
+let currentWorker=null;
+let requestId=0;
 
 function renderModules(){
   const body=$('moduleRows'); body.replaceChildren();
@@ -302,6 +306,7 @@ function setSettings(data){
   renderModules();dirty();
 }
 function dirty(){
+  cancelWork();
   currentPlan=null;$('downloadPlan').disabled=true;$('results').classList.add('hidden');$('empty').classList.remove('hidden');
   $('status').textContent='Einstellungen geändert. „Beste Flotte berechnen“ auswählen.';
   $('status').classList.remove('error');
@@ -452,15 +457,11 @@ function renderResult(plan){
   const totals=$('totalModules');totals.replaceChildren();
   for(const [name,quantity] of [...totalModules].sort((a,b)=>a[0].localeCompare(b[0],'de'))){totals.append(el('span',`${integers.format(quantity)} × ${name}`,'total'));}
   const tbody=$('alternatives');tbody.replaceChildren();
-  const step=data.interval,center=Math.round(plan.minutes/step);
-  const ticks=new Set([1,2,3,4,6,9,12,18,24,center-2,center-1,center,center+1,center+2].filter(k=>k>=1 && (data.maxMining===0 || k*step<=data.maxMining+1e-9)));
-  const sorted=[...ticks].sort((a,b)=>a-b);
-  for(const tick of sorted){
-    const time=tick*step,alt=bestAtTime(plan.fleet,data,time);
-    if(!alt)continue;
+  const center=Math.round(plan.minutes/data.interval);
+  for(const alt of plan.alternatives||[]){
     const tr=el('tr');
-    if(tick===center)tr.className='em';
-    tr.append(el('td',`${format.format(time)} Min.`),el('td',integers.format(alt.level)),el('td',integers.format(alt.rate)));
+    if(alt.tick===center)tr.className='em';
+    tr.append(el('td',`${format.format(alt.minutes)} Min.`),el('td',integers.format(alt.level)),el('td',integers.format(alt.rate)));
     tbody.append(tr);
   }
   $('empty').classList.add('hidden');$('results').classList.remove('hidden');
@@ -493,21 +494,84 @@ function exportPlan(plan){
   ];
   download('EU4-Flottenbauplan.txt',lines.join('\n'),'text/plain;charset=utf-8');
 }
-function run(){
-  $('status').classList.remove('error');$('status').textContent='Berechne optimale Flottenkombination …';
-  $('calculate').disabled=true;
-  setTimeout(()=>{
-    try{
-      const data=inputs();currentPlan=solve(data);renderResult(currentPlan);
-      $('status').textContent='Optimaler Bauplan berechnet (exakte ganzzahlige Suche).';
-      try{localStorage.setItem('eu4-fleet-optimizer-settings',JSON.stringify(getRawSettings()));}catch(_){}
-    }catch(error){
-      currentPlan=null;$('status').classList.add('error');$('status').textContent=error instanceof Error?error.message:String(error);
-      $('results').classList.add('hidden');$('empty').classList.remove('hidden');$('downloadPlan').disabled=true;
-    }finally{$('calculate').disabled=false;}
-  },25);
+function cancelWork(){
+  if(currentWorker){currentWorker.terminate();currentWorker=null;}
+  requestId++;
+  $('calculate').disabled=false;
+  $('cancelCalculation').hidden=true;
+  $('calculationProgress').hidden=true;
 }
-
+function run(){
+  cancelWork();
+  currentPlan=null;
+  $('downloadPlan').disabled=true;
+  $('results').classList.add('hidden');
+  $('empty').classList.remove('hidden');
+  $('status').classList.remove('error');
+  let data;
+  try{data=inputs();}
+  catch(error){
+    $('status').classList.add('error');
+    $('status').textContent=error instanceof Error?error.message:String(error);
+    return;
+  }
+  let worker;
+  try{worker=new Worker('./optimizer-worker.js');}
+  catch(error){
+    $('status').classList.add('error');
+    $('status').textContent='Web Worker konnte nicht gestartet werden. Bitte die GitHub-Pages-Version oder einen lokalen Webserver verwenden: '+error.message;
+    return;
+  }
+  currentWorker=worker;
+  const id=++requestId;
+  $('calculate').disabled=true;
+  $('cancelCalculation').hidden=false;
+  $('calculationProgress').hidden=false;
+  $('calculationProgress').removeAttribute('value'); // zunächst unbekannte Dauer
+  $('status').textContent='Berechnung im Hintergrund gestartet. Die Seite bleibt bedienbar.';
+  const fail=message=>{
+    if(id!==requestId || worker!==currentWorker)return;
+    cancelWork();
+    $('status').classList.add('error');
+    $('status').textContent=message;
+  };
+  worker.onmessage=event=>{
+    if(id!==requestId || worker!==currentWorker)return;
+    const message=event.data||{};
+    if(message.type==='progress'){
+      const current=Number(message.current)||0;
+      const total=Number(message.total)||0;
+      if(total>0 && current>0){
+        $('calculationProgress').value=Math.min(100,100*current/total);
+        $('status').textContent=message.stage+' – '+current+' von '+total+' Schritten. Berechnung abbrechbar.';
+      }else{
+        $('calculationProgress').removeAttribute('value');
+        $('status').textContent=message.stage+' … Berechnung abbrechbar.';
+      }
+    }else if(message.type==='result'){
+      const plan=message.plan;
+      cancelWork();
+      try{
+        currentPlan=plan;
+        renderResult(plan);
+        $('status').textContent='Optimaler Bauplan berechnet (exakte ganzzahlige Suche).';
+        try{localStorage.setItem('eu4-fleet-optimizer-settings',JSON.stringify(getRawSettings()));}catch(_){}
+      }catch(error){
+        currentPlan=null;
+        $('status').classList.add('error');
+        $('status').textContent='Darstellung fehlgeschlagen: '+error.message;
+      }
+    }else if(message.type==='error')fail(message.message||'Berechnung fehlgeschlagen.');
+  };
+  worker.onerror=event=>{event.preventDefault();fail('Berechnungs-Worker fehlgeschlagen. Bitte Seite aktualisieren und erneut versuchen.');};
+  worker.onmessageerror=()=>fail('Die berechneten Daten konnten nicht übertragen werden.');
+  worker.postMessage({type:'calculate',data});
+}
+$('cancelCalculation').addEventListener('click',()=>{
+  if(!currentWorker)return;
+  cancelWork();
+  $('status').textContent='Berechnung abgebrochen. Einstellungen bleiben erhalten.';
+});
 $('race').addEventListener('change',()=>{renderModules();dirty();});
 document.querySelectorAll('input:not(#importFile)').forEach(input=>{
   input.addEventListener('input',()=>{if(input.name==='limitMode')$('cargoLimit').disabled=input.value!=='limit';dirty();if(input.id==='slots'||input.id==='reserved')renderModules();});
@@ -546,7 +610,7 @@ try{
   const saved=localStorage.getItem('eu4-fleet-optimizer-settings');
   if(saved)setSettings(JSON.parse(saved));else setSettings(clone(defaults));
 }catch(error){setSettings(clone(defaults));}
-run();
+$('status').textContent='Einstellungen geladen. Zum Start „Beste Flotte berechnen“ wählen.';
 </script>
 <script>
 /* Exakte zusätzliche Bestandgrenzen je Modultyp über die gesamte Flotte. */
@@ -722,8 +786,7 @@ run();
     }
     return best;
   };
-  // Restore saved configurations after original inline initialization.
-  if(modules.some(m=>m.maxCount!=null && m.maxCount!=='')) run();
+  // Berechnung startet ausschließlich nach Klick; kein automatischer Rechenstart.
 })();
 
 </script>
@@ -838,7 +901,7 @@ run();
   const footer=document.querySelector('.footer');
   footer.textContent='Unabhängiges Community-Projekt · Alle Berechnungen laufen im Browser. Angaben und Spielmechaniken bitte selbst prüfen. · ';
   const wiki=tag('a',null,'Empire-Universe-Wiki');wiki.href='https://www.empire-universe.com/wiki#module';footer.append(wiki);
-  run();
+  // Keine schwere Optimierung beim Laden oder Einlesen von Freigabelinks.
 })();
 
 </script>
