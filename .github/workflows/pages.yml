@@ -37,7 +37,7 @@ jobs:
           cp asteroiden-mining-flottenoptimierer/verbesserungen.js _site/asteroiden-mining-flottenoptimierer/
           cp asteroiden-mining-flottenoptimierer/datenbank-anbindung.js _site/asteroiden-mining-flottenoptimierer/
           cp asteroiden-mining-flottenoptimierer/optimizer-worker.js _site/asteroiden-mining-flottenoptimierer/
-          cp datenbank/index.html datenbank/app.js datenbank/style.css datenbank/referenzdaten.json _site/datenbank/
+          cp datenbank/index.html datenbank/app.js datenbank/lokalisierung-de.js datenbank/style.css datenbank/referenzdaten.json _site/datenbank/
 
       - name: Webseite packen
         uses: actions/upload-pages-artifact@v4
