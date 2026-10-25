@@ -650,7 +650,7 @@ document.querySelectorAll('input:not(#importFile):not(#maxPa)').forEach(input=>{
   input.addEventListener('change',()=>{if(input.name==='limitMode')$('cargoLimit').disabled=document.querySelector('input[name=limitMode]:checked').value!=='limit';dirty();});
 });
 $('addModule').addEventListener('click',()=>{
-  modules.push({id:`new-${Date.now()}-${modules.length}`,name:'Neues Modul',slots:1,cargo:0,extraction:1,enabled:false,race:'all',maxCount:null});
+  modules.push({id:`new-${Date.now()}-${modules.length}`,name:'Neues Modul',slots:1,cargo:activeModuleTab==='cargo'?1:0,extraction:activeModuleTab==='laser'?1:0,enabled:false,race:'all',maxCount:null});
   renderModules();dirty();
 });
 $('reset').addEventListener('click',()=>{
