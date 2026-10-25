@@ -76,9 +76,10 @@ test('Fracht- und Laser-Tabs sind unabhängig von der Optimierung',()=>{
 
 test('Konfiguration bleibt zu alten Links und Speicherständen kompatibel',()=>{
   assert.match(html,/const fieldsV2=/);
+  assert.match(html,/const fieldsV3=/);
   assert.match(html,/const fieldsOld=/);
-  assert.match(html,/const payload=\{v:3/);
-  assert.match(html,/\[1,2,3\]\.includes\(value\.v\)/);
+  assert.match(html,/const payload=\{v:4/);
+  assert.match(html,/\[1,2,3,4\]\.includes\(value\.v\)/);
   assert.match(html,/const budget=data\.maxPa!=null \? data\.maxPa : data\.ships!=null\?Number\(data\.ships\)\*ship\.pa/);
   assert.match(html,/modules=defaults\.modules\.map\(base=>existing\.get\(base\.id\)\|\|clone\(base\)\)/);
 });
