@@ -8,6 +8,7 @@ const modules=catalog.catalogs.modules.modules;
 const ships=catalog.catalogs.ships.ships;
 const app=read('datenbank/app.js');
 const bridge=read('asteroiden-mining-flottenoptimierer/datenbank-anbindung.js');
+const opt=read('asteroiden-mining-flottenoptimierer/index.html');
 
 test('Datensnapshot enthält alle fünf offiziellen Kataloge',()=>{
   assert.equal(Object.keys(ships).length,30);
