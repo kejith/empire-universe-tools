@@ -46,14 +46,14 @@ Für die Worker-Datei benötigt die lokal geöffnete Anwendung üblicherweise ei
 Der Optimierer verwendet weiterhin als Spielmodell:
 
 - Gemeinsamen Frachtraum für die gesamte Flotte und additive Abbaustärke.
-- Frei einstellbare Flottengröße, Slots, reservierte Slots und Flugzeiten.
+- Frei einstellbares **PA-Budget**, Schiffstyp, reservierte Slots und Flugzeiten. Die Slots und PA-Kosten je Schiff stammen aus dem gespeicherten Referenzexport. Die Schiffszahl ergibt sich aus `floor(Max. PA / PA pro Schiff)`. Für die exakte Suche werden derzeit höchstens 300 Schiffe und bis zu 500 Slots je Schiff unterstützt; nicht unterstützte Schiffstypen werden nicht angeboten.
 - Diskrete Abbauintervalle (standardmäßig 5 Minuten).
 - **1.000 Ressourcen/Minute je Extraktionslevel × eingestellte Abbaueffizienz**.
 - Optionale Flotten-Frachtgrenze.
 - Gesamtbestand je Modultyp (leer = unbegrenzt).
 - Exakte ganzzahlige Suche, begrenzt durch Schutzlimits für Rechenaufwand.
 
-**Neu:** Über „Mining-Module aus Datenbank übernehmen“ können offizielle Slot-, Fracht- und Extraktionswerte geladen werden. Dabei bleiben bestehende Modulbestände (Max. Anzahl) und Aktivierungszustände erhalten. Noch nicht bekannte Module werden **deaktiviert** hinzugefügt, bis sie ausdrücklich ausgewählt werden. Die optionale Schiffsauswahl übernimmt die Slotzahl des gewählten Typs.
+**Permanenter Mining-Katalog:** Zehn echte Frachtmodule und sieben Asteroiden-Extraktionslaser aus der offiziellen Datenbank sind ab Werk enthalten, einschließlich Fracht L, Asteroiden-Laser III und der Alien-Artefaktmodule. Fracht und Laser werden in zwei Tabs angezeigt, aber zusammen optimiert. Seltene neue Module sind zunächst deaktiviert. Stamm-Module lassen sich deaktivieren, jedoch nicht versehentlich löschen. Benutzerdefinierte Module können weiterhin ergänzt und entfernt werden. Bestehende JSON-Exporte und teilbare Links (Version 1/2) werden auf das neue PA- und Modulformat (Version 3) migriert. Der Import aus der Datenbank ist nicht mehr notwendig.
 
 Es wird **nicht automatisch überprüft**, ob ein Nutzer ein Modul erforscht hat. Forschungsvoraussetzungen stehen in der Datenbank; verfügbare Module bitte entsprechend aktivieren. Mining-Optimierer, Stationsmodule und andere Spielmechaniken außerhalb des verwendeten Extraktions-/Frachtmodells werden nicht ungeprüft als Boni eingerechnet.
 
