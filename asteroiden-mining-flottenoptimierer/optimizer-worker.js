@@ -9,9 +9,30 @@
 let lastProgress = 0;
 let reportProgress = (_label,_done,_total)=>{};
 
+// Sichere Dominanzregel für den Exakt-Modus: Ein unbegrenzt verfügbares
+// Modul dominiert ein schwächeres, wenn es bei höchstens gleicher Slotzahl
+// in BEIDEN Zielgrößen nicht schlechter ist. Bei Bestandsgrenzen gilt diese
+// Regel nur, wenn der Ersatz auch bei voller Flottenbelegung verfügbar ist.
+function usableModuleIndices(data) {
+  const free=data.slots-data.reserved;
+  return data.modules.map((m,i)=>({m,i})).filter(({m,i})=>{
+    if(m.slots>free || m.maxCount===0 || (!m.cargo&&!m.extraction))return false;
+    return !data.modules.some((other,j)=>{
+      if(j===i || other.slots>m.slots || other.slots>free ||
+          other.cargo<m.cargo || other.extraction<m.extraction)return false;
+      const unlimited=other.maxCount==null ||
+        Number(other.maxCount)>=data.ships*Math.floor(free/other.slots);
+      if(!unlimited)return false;
+      const strict=other.slots<m.slots || other.cargo>m.cargo ||
+        other.extraction>m.extraction || j<i;
+      return strict;
+    });
+  }).map(entry=>entry.i);
+}
+
 function buildShipFrontier(data){
   const free=data.slots-data.reserved;
-  const mods=data.modules.filter(m=>m.slots<=free);
+  const mods=usableModuleIndices(data).map(i=>data.modules[i]);
   if(!mods.some(m=>m.extraction>0))throw new Error('Kein aktives Extraktionsmodul passt in die freien Slots.');
   const bySlots=Array.from({length:free+1},()=>new Map());
   bySlots[0].set(0,{cargo:0,level:0,used:0,prev:null,moduleIndex:-1});
@@ -133,7 +154,9 @@ function solve(data){
   function limitedModuleInfo(data) {
     const free = data.slots - data.reserved;
     const scarce = [];
+    const useful=new Set(usableModuleIndices(data));
     for (let index = 0; index < data.modules.length; index++) {
+      if(!useful.has(index))continue;
       const module = data.modules[index];
       if (module.slots > free) continue;
       if (module.maxCount == null) continue;
@@ -186,6 +209,7 @@ function solve(data){
   }
   function shipOptions(data, limited) {
     const free=data.slots-data.reserved;
+    const allowed=usableModuleIndices(data);
     const bySlots=Array.from({length:free+1},()=>new Map());
     const root={used:0, level:0,cargo:0,code:0,prev:null,moduleIndex:-1};
     bySlots[0].set('0:0',root);
@@ -193,7 +217,7 @@ function solve(data){
       reportProgress('Schiffsausrüstungen',used,free+1);
       const states=bySlots[used];
       if(states.size>MAX_LOCAL_STATES) throw new Error('Zu viele mögliche Modulbestände für ein einzelnes Schiff.');
-      for(const node of states.values())for(let i=0;i<data.modules.length;i++){
+      for(const node of states.values())for(const i of allowed){
         const mod=data.modules[i];
         const nextSlots=used+mod.slots;
         if(nextSlots>free || mod.maxCount===0)continue;
