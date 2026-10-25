@@ -368,7 +368,7 @@ function fastOptimize(data) {
     }
     return best;
   };
-  function build(fraction,laserFirst,absolute){
+  function build(fraction,laserFirst,absolute,specialized){
     const ordered=orders[absolute],used=new Int32Array(n);
     const ships=[];
     let totalCargo=0,totalLevel=0;
@@ -389,7 +389,7 @@ function fastOptimize(data) {
     }
     for(let i=0;i<data.ships;i++){
       const ship={counts:new Int32Array(n),used:0,level:0,cargo:0};
-      const miningSlots=Math.round(free*fraction);
+      const miningSlots=specialized ? ((i+0.5)/data.ships<fraction?free:0) : Math.round(free*fraction);
       if(laserFirst){
         fill(ship,'laser',miningSlots);
         fill(ship,'cargo',free-ship.used);
@@ -413,8 +413,8 @@ function fastOptimize(data) {
   let progress=0;
   for(const fraction of fractions){
     for(const absolute of [0,1]){
-      for(const laserFirst of [true,false]){
-        const candidate=build(fraction,laserFirst,absolute);
+      for(const laserFirst of [true,false])for(const specialized of [false,true]){
+        const candidate=build(fraction,laserFirst,absolute,specialized);
         if(candidate.performance)all.push(candidate);
       }
     }
