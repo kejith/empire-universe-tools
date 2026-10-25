@@ -500,6 +500,7 @@ function solve(data){
 function el(tag,txt,cls){const e=document.createElement(tag);if(txt!==undefined)e.textContent=txt;if(cls)e.className=cls;return e;}
 function renderResult(plan){
   const {data}=plan;
+  const shipName=shipCatalog.find(entry=>entry.id===data.shipId)?.name||'Schiff';
   const set=(id,text)=>$(id).textContent=text;
   set('hourRate',integers.format(plan.rate));
   set('miningTime',`${format.format(plan.minutes)} Min.`);
@@ -516,7 +517,7 @@ function renderResult(plan){
   const totalModules=new Map();
   for(const item of plan.compositions){
     const ship=el('div',undefined,'ship');
-    const head=el('div',undefined,'ship-head');head.append(el('strong',`${item.count} × Fregatte`),el('span',`Stärke ${integers.format(item.level)}`,'em'));ship.append(head);
+    const head=el('div',undefined,'ship-head');head.append(el('strong',`${item.count} × ${shipName}`),el('span',`Stärke ${integers.format(item.level)}`,'em'));ship.append(head);
     ship.append(el('div',`${integers.format(item.cargo+data.baseCargo)} Fracht / Schiff · ${item.used+data.reserved} von ${data.slots} Slots belegt (${data.reserved} reserviert)`,'ship-details'));
     const tags=el('div',undefined,'tagline');
     for(const module of item.modules){tags.append(el('span',`${module.quantity}× ${module.name}`,'tag'));totalModules.set(module.name,(totalModules.get(module.name)||0)+module.quantity*item.count);}
@@ -544,6 +545,7 @@ function download(filename,text,contentType){
 }
 function exportPlan(plan){
   const data=plan.data;
+  const shipName=shipCatalog.find(entry=>entry.id===data.shipId)?.name||'Schiff';
   const lines=[
     'Empire Universe 4 – Optimaler Flottenbauplan',
     `PA: ${integers.format(data.maxPa)} · Schiff: ${data.shipId} (${integers.format(data.shipPa)} PA pro Schiff)`,
@@ -559,7 +561,7 @@ function exportPlan(plan){
     `Ressourcen pro Runde: ${integers.format(plan.perTrip)}`,
     `Flugdauer je Runde inkl. Abbau: ${format.format(plan.cycle)} Minuten`,
     '', 'Ausrüstungen:',
-    ...plan.compositions.flatMap(ship=>[`${ship.count}× Fregatte (Stärke ${ship.level}, Fracht ${integers.format(ship.cargo+data.baseCargo)}):`,...ship.modules.map(m=>`  ${m.quantity}× ${m.name}`),`  + ${data.reserved} reservierte Slots`, '']),
+    ...plan.compositions.flatMap(ship=>[`${ship.count}× ${shipName} (Stärke ${ship.level}, Fracht ${integers.format(ship.cargo+data.baseCargo)}):`,...ship.modules.map(m=>`  ${m.quantity}× ${m.name}`),`  + ${data.reserved} reservierte Slots`, '']),
     'Hinweis: gemeinsamer Flottenfrachterraum und additive Modulleistung angenommen.'
   ];
   download('EU4-Flottenbauplan.txt',lines.join('\n'),'text/plain;charset=utf-8');
