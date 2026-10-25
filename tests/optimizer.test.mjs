@@ -100,6 +100,6 @@ test('80 klassische Fregatten reproduzieren den früheren Referenzwert',()=>{
 
 test('deutsche Standardmodule und Rassenbeschränkungen vorhanden',()=>{
  assert.match(html,/Mini-Asteroiden-Laser/);
- assert.match(html,/laser-nemoryx/);
- assert.match(html,/cargo-xyrrh/);
+ assert.match(html,/laserExtractionMiniNemoryx/);
+ assert.match(html,/cargoMiniXyrrh/);
 });
