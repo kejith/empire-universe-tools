@@ -299,6 +299,204 @@ function solve(data){
   };
 
 })();
+
+/* Effizienzbasierte, schnelle Näherung für Multi-Knapsack (mehrere Schiffe)
+ * mit gemeinsamer Fracht, Extraktionsleistung und globalen Modulbeständen.
+ * Greedy-Belegung + Multi-Start + begrenzte lokale Austauschsuche.
+ * Kein Anspruch auf exaktes Optimum – siehe optionalen Exakt-Modus.
+ */
+function fastOptimize(data) {
+  const free=data.slots-data.reserved;
+  const modules=data.modules;
+  const n=modules.length;
+  const limits=modules.map(m=>m.maxCount==null ? Infinity : Number(m.maxCount));
+  const orderBy=(kind,preferAbsolute)=>{
+    const keys=modules.map((m,i)=>({i,slots:m.slots,power:kind==='laser'?m.extraction:m.cargo,
+      efficiency:(kind==='laser'?m.extraction:m.cargo)/m.slots}))
+      .filter(m=>m.power>0 && m.slots<=free && limits[m.i]>0);
+    keys.sort((a,b)=> preferAbsolute?
+      b.power-a.power || b.efficiency-a.efficiency || a.slots-b.slots :
+      b.efficiency-a.efficiency || b.power-a.power || a.slots-b.slots);
+    return keys;
+  };
+  const orders=[0,1].map(absolute=>({
+    laser:orderBy('laser',absolute),
+    cargo:orderBy('cargo',absolute)
+  }));
+  if(!orders[0].laser.length)throw new Error('Kein Abbaumodul passt in die verfügbaren Slots.');
+  if(!orders[0].cargo.length && data.baseCargo===0)throw new Error('Kein Frachtmodul passt in die verfügbaren Slots.');
+
+  const maxSteps=data.maxMining>0 ? Math.floor((data.maxMining+1e-9)/data.interval) : Infinity;
+  const evaluate=(level,cargo)=>{
+    if(level<=0)return null;
+    const installedCargo=cargo+data.ships*data.baseCargo;
+    const usableCargo=data.limitMode==='limit' ? Math.min(installedCargo,data.cargoLimit) : installedCargo;
+    if(usableCargo<=0)return null;
+    const fill=usableCargo/(level*data.resourceRate*data.interval);
+    const low=Math.max(1,Math.min(maxSteps,Math.floor(fill)));
+    const high=Math.max(1,Math.min(maxSteps,Math.ceil(fill)));
+    let best=null;
+    for(const tick of [low,high]){
+      if(tick>maxSteps)continue;
+      const result=resultForTime(level,cargo,tick*data.interval,data);
+      if(!best || result.rate>best.rate+1e-9 ||
+        (Math.abs(result.rate-best.rate)<1e-9 && result.cycle<best.cycle))best=result;
+    }
+    return best;
+  };
+  function build(fraction,laserFirst,absolute){
+    const ordered=orders[absolute],used=new Int32Array(n);
+    const ships=[];
+    let totalCargo=0,totalLevel=0;
+    function fill(ship,group,maxSlots){
+      let remaining=Math.min(maxSlots,free-ship.used);
+      for(const item of ordered[group]){
+        if(remaining<item.slots)continue;
+        const count=Math.min(Math.floor(remaining/item.slots),limits[item.i]-used[item.i]);
+        if(count<=0)continue;
+        ship.counts[item.i]+=count;
+        used[item.i]+=count;
+        ship.used+=count*item.slots;
+        ship.level+=count*(modules[item.i].extraction);
+        ship.cargo+=count*(modules[item.i].cargo);
+        remaining-=count*item.slots;
+        if(remaining===0)break;
+      }
+    }
+    for(let i=0;i<data.ships;i++){
+      const ship={counts:new Int32Array(n),used:0,level:0,cargo:0};
+      const miningSlots=Math.round(free*fraction);
+      if(laserFirst){
+        fill(ship,'laser',miningSlots);
+        fill(ship,'cargo',free-ship.used);
+        fill(ship,'laser',free-ship.used);
+      }else{
+        fill(ship,'cargo',free-miningSlots);
+        fill(ship,'laser',free-ship.used);
+        fill(ship,'cargo',free-ship.used);
+      }
+      totalCargo+=ship.cargo;totalLevel+=ship.level;
+      ships.push(ship);
+    }
+    return {ships,used,totalLevel,totalCargo,performance:evaluate(totalLevel,totalCargo)};
+  }
+
+  // Globales Balancing: das passende Verhältnis aus Mining und Fracht kann
+  // sich mit Flugzeit, Abbaueffizienz und Frachtlimit deutlich verschieben.
+  const fractions=[0,0.04,0.08,0.12,0.16,0.2,0.25,0.3,0.35,0.4,0.45,0.5,
+    0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.94,0.97,1];
+  const all=[];
+  let progress=0;
+  for(const fraction of fractions){
+    for(const absolute of [0,1]){
+      for(const laserFirst of [true,false]){
+        const candidate=build(fraction,laserFirst,absolute);
+        if(candidate.performance)all.push(candidate);
+      }
+    }
+    progress++;
+    reportProgress('Effizienzbasierte Vorbelegung',progress,fractions.length);
+  }
+  if(!all.length)throw new Error('Mit diesen Modulen ist kein gemeinsamer Abbau und Transport möglich.');
+  all.sort((a,b)=>b.performance.rate-a.performance.rate);
+  const viable=[],seen=new Set();
+  for(const candidate of all){
+    const key=candidate.totalCargo+':'+candidate.totalLevel;
+    if(seen.has(key))continue;
+    seen.add(key);viable.push(candidate);
+  }
+
+  // Einzelmodule durch passendere Kombinationen ersetzen. Die tatsächliche
+  // Zielgröße ist Ressourcen/h, nicht isoliert Fracht oder Extraktion.
+  function refine(candidate) {
+    const {ships,used}=candidate;
+    let current=candidate.performance;
+    let level=candidate.totalLevel,cargo=candidate.totalCargo;
+    const operationsMax=170000;
+    let operations=0;
+    outer:for(let pass=0;pass<2;pass++){
+      let improved=false;
+      for(const ship of ships){
+        const sources=[-1];
+        for(let i=0;i<n;i++)if(ship.counts[i]>0)sources.push(i);
+        let best=null;
+        for(const from of sources){
+          for(let removed=from<0?0:1;removed<= (from<0?0:Math.min(3,ship.counts[from]));removed++){
+            const after=free-ship.used+(from<0?0:removed*modules[from].slots);
+            for(let to=0;to<n;to++){
+              if(to===from||modules[to].slots>after || limits[to]===0)continue;
+              const available=limits[to]-used[to];
+              const maxCount=Math.min(Math.floor(after/modules[to].slots),available);
+              if(maxCount<=0)continue;
+              // Prüfe auch kleine Stückzahlen: maximales Auffüllen alleine
+              // kann wegen des globalen Fracht/Mining-Verhältnisses schlechter sein.
+              const choices=[1,2,3,maxCount];
+              for(const add of choices){
+                if(add>maxCount || add<1)continue;
+                const newLevel=level+(add*modules[to].extraction)-(from<0?0:removed*modules[from].extraction);
+                const newCargo=cargo+(add*modules[to].cargo)-(from<0?0:removed*modules[from].cargo);
+                const performance=evaluate(newLevel,newCargo);
+                if(performance && performance.rate>current.rate+1e-8 &&
+                    (!best || performance.rate>best.performance.rate+1e-8))
+                  best={from,to,removed,add,performance,newLevel,newCargo};
+                if(++operations>=operationsMax)break outer;
+              }
+            }
+          }
+        }
+        if(best){
+          if(best.from>=0){
+            ship.counts[best.from]-=best.removed;
+            used[best.from]-=best.removed;
+            ship.used-=best.removed*modules[best.from].slots;
+            ship.cargo-=best.removed*modules[best.from].cargo;
+            ship.level-=best.removed*modules[best.from].extraction;
+          }
+          ship.counts[best.to]+=best.add;used[best.to]+=best.add;
+          ship.used+=best.add*modules[best.to].slots;
+          ship.cargo+=best.add*modules[best.to].cargo;
+          ship.level+=best.add*modules[best.to].extraction;
+          level=best.newLevel;cargo=best.newCargo;
+          current=best.performance;improved=true;
+        }
+      }
+      reportProgress('Lokale Bauplanverbesserung',pass+1,2);
+      if(!improved)break;
+    }
+    candidate.totalCargo=cargo;candidate.totalLevel=level;candidate.performance=current;
+  }
+  for(let i=0;i<Math.min(3,viable.length);i++)refine(viable[i]);
+  viable.sort((a,b)=>b.performance.rate-a.performance.rate);
+  const winner=viable[0];
+
+  const compositions=new Map();
+  for(const ship of winner.ships){
+    const key=ship.counts.join(',');
+    let record=compositions.get(key);
+    if(record){record.count++;continue;}
+    record={
+      count:1,level:ship.level,cargo:ship.cargo,used:ship.used,
+      modules:[...ship.counts].flatMap((quantity,index)=>quantity>0?
+        [{id:modules[index].id,name:modules[index].name,quantity}]:[])
+    };
+    compositions.set(key,record);
+  }
+  // Zusätzlich müssen in Vergleichstabellen andere Mining-Dauern aus den
+  // Kandidaten bewertet werden; hierzu reichen Level und Fracht je Kandidat.
+  const fleet={fastCandidates:viable.map(c=>({level:c.totalLevel,cargo:c.totalCargo}))};
+  return {...winner.performance,
+    compositions:[...compositions.values()].sort((a,b)=>b.level-a.level||b.cargo-a.cargo),
+    fleet,data,method:'heuristic'};
+}
+function fastBestAtTime(fleet,data,minutes){
+  let best=null;
+  for(const state of fleet.fastCandidates){
+    const result=resultForTime(state.level,state.cargo,minutes,data);
+    if(!best || result.rate>best.rate)best=result;
+  }
+  return best;
+}
+
 self.addEventListener('message',(event)=>{
   if(event.data?.type!=='calculate')return;
   const data=event.data.data;
@@ -311,13 +509,13 @@ self.addEventListener('message',(event)=>{
   };
   try{
     reportProgress('Suche vorbereiten',0,1);
-    const plan=solve(data);
+    const plan=data.searchMode==='exact'?solve(data):fastOptimize(data);
     reportProgress('Alternative Abbauzeiten berechnen',0,1);
     const center=Math.round(plan.minutes/data.interval);
     const ticks=new Set([1,2,3,4,6,9,12,18,24,center-2,center-1,center,center+1,center+2]
       .filter(k=>k>=1&&(data.maxMining===0||k*data.interval<=data.maxMining+1e-9)));
     const alternatives=[...ticks].sort((a,b)=>a-b).map(tick=>{
-      const result=bestAtTime(plan.fleet,data,tick*data.interval);
+      const result=plan.method==='heuristic' ? fastBestAtTime(plan.fleet,data,tick*data.interval) : bestAtTime(plan.fleet,data,tick*data.interval);
       return result?{tick,minutes:tick*data.interval,level:result.level,rate:result.rate}:null;
     }).filter(Boolean);
     // Für Anzeige und Export ist der riesige DP-Zwischenzustand nicht nötig.
